@@ -116,7 +116,7 @@
         const iti = window.intlTelInput(phoneField, { preferredCountries: ["us", "sa", "bd"], utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js" });
 
         const firebaseConfig = {
-            databaseURL: "YOUR_FIREBASE_DATABASE_URL_HERE" 
+            databaseURL: "https://global-messenger-a8719-default-rtdb.firebaseio.com/" 
         };
         
         if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
