@@ -43,7 +43,6 @@
         
         #dashboard { display: none; flex-direction: column; height: 100%; }
         
-        /* Chat Screen Layout Optimized for Keyboard Push */
         #chatScreen { display: none; flex-direction: column; height: 100vh; height: -webkit-fill-available; overflow: hidden; }
         
         .header { background: linear-gradient(135deg, #007bff, #0056b3); padding: 15px; display: flex; justify-content: space-between; align-items: center; color: white; flex-shrink: 0; }
@@ -73,7 +72,7 @@
         .sent { background: linear-gradient(135deg, #007bff, #0056b3); align-self: flex-end; border-bottom-right-radius: 2px; }
         .received { background: rgba(255, 255, 255, 0.15); align-self: flex-start; border-bottom-left-radius: 2px; }
         
-        .chat-footer { padding: 10px; display: flex; gap: 8px; background: #1a1a1a; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; }
+        .chat-footer { padding: 10px 10px 22px 10px; display: flex; gap: 8px; background: #1a1a1a; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; }
         .attach-btn { background: none; border: none; color: #aaa; font-size: 20px; cursor: pointer; padding: 5px; }
         .attach-btn:hover { color: #38bdf8; }
         
@@ -83,11 +82,10 @@
         .profile-info-box { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin: 8px 0; text-align: left; font-size: 13px; }
         .edit-name-box { display: none; margin-top: 10px; }
 
-        /* Call Modal Overlay */
         #callOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111; z-index: 200; flex-direction: column; justify-content: space-between; align-items: center; padding: 30px; }
         .video-container { position: relative; width: 100%; height: 60%; background: #000; border-radius: 16px; overflow: hidden; display: flex; justify-content: center; align-items: center; }
         video { width: 100%; height: 100%; object-fit: cover; }
-        #localVideo { position: absolute; top: 10px; right: 10px; width: 90px; height: 120px; border-radius: 8px; border: 2px solid #007bff; }
+        #localVideo { position: absolute; top: 10px; right: 10px; width: 90px; height: 120px; border-radius: 8px; border: 2px solid #007bff; background: #222; }
     </style>
 </head>
 <body>
@@ -138,35 +136,44 @@
         </p>
     </div>
 
-    <!-- Forgot Password Modal -->
+    <!-- Forgot Password Modal (Multi-step verification) -->
     <div class="modal" id="forgotModal">
         <div class="modal-content">
             <i class="fas fa-shield-alt profile-icon-lg"></i>
-            <h3 style="color:#fff; margin-bottom:10px;">Security Verification</h3>
+            <h3 id="forgotModalTitle" style="color:#fff; margin-bottom:10px;">Security Verification</h3>
             
-            <div class="phone-container">
-                <select id="resetCountryCode" class="country-select"></select>
-                <input type="tel" id="resetPhone" placeholder="Registered Phone">
+            <!-- Step 1: Verification Form -->
+            <div id="forgotStep1">
+                <div class="phone-container">
+                    <select id="resetCountryCode" class="country-select"></select>
+                    <input type="tel" id="resetPhone" placeholder="Registered Phone">
+                </div>
+
+                <label class="date-label" style="text-align: left;">Date of Birth</label>
+                <input type="date" id="resetDob">
+                
+                <div id="forgotSecQuestionArea">
+                    <select id="resetSecQuestion">
+                        <option value="school">What was your first school name?</option>
+                        <option value="pet">What is your favorite pet's name?</option>
+                        <option value="city">In which city were you born?</option>
+                    </select>
+                    <input type="text" id="resetSecAnswer" placeholder="Your Security Answer">
+                </div>
+
+                <button class="btn" onclick="verifyForgotData()" style="margin-top:10px;">Next</button>
             </div>
 
-            <label class="date-label" style="text-align: left;">Date of Birth</label>
-            <input type="date" id="resetDob">
-            
-            <div id="forgotSecQuestionArea">
-                <select id="resetSecQuestion">
-                    <option value="school">What was your first school name?</option>
-                    <option value="pet">What is your favorite pet's name?</option>
-                    <option value="city">In which city were you born?</option>
-                </select>
-                <input type="text" id="resetSecAnswer" placeholder="Your Security Answer">
+            <!-- Step 2: New Password Form -->
+            <div id="forgotStep2" style="display: none;">
+                <p style="font-size: 12px; color: #aaa; margin-bottom: 12px;">Verification successful! Please enter your new password.</p>
+                <div class="password-container">
+                    <input type="password" id="newPassInput" placeholder="New Password">
+                    <i class="fas fa-eye toggle-password" onclick="togglePasswordVisibility('newPassInput', this)"></i>
+                </div>
+                <button class="btn" onclick="handleResetPassword()" style="margin-top:10px;">Reset Password</button>
             </div>
 
-            <div class="password-container">
-                <input type="password" id="newPassInput" placeholder="New Password">
-                <i class="fas fa-eye toggle-password" onclick="togglePasswordVisibility('newPassInput', this)"></i>
-            </div>
-
-            <button class="btn" onclick="handleResetPassword()" style="margin-top:10px;">Reset Password</button>
             <button class="btn btn-secondary" onclick="closeForgotModal()" style="margin-top:8px;">Cancel</button>
         </div>
     </div>
@@ -242,7 +249,6 @@
                     <span id="chatTitle" style="font-weight:bold;">User</span>
                 </div>
             </div>
-            <!-- Audio & Video Call Options -->
             <div class="call-actions">
                 <button class="call-btn" onclick="startCall('audio')" title="Audio Call"><i class="fas fa-phone-alt"></i></button>
                 <button class="call-btn" onclick="startCall('video')" title="Video Call"><i class="fas fa-video"></i></button>
@@ -251,7 +257,6 @@
         
         <div class="msg-area" id="msgArea"></div>
 
-        <!-- Chat Footer (File + Location + Textbar Keyboard Fix) -->
         <div class="chat-footer">
             <input type="file" id="fileInput" accept="image/*,video/*,.pdf,.doc,.docx" style="display:none;" onchange="handleFileUpload(event)">
             
@@ -404,6 +409,7 @@
     let viewingProfilePhone = "";
     let currentSelfIsPublic = false;
     let localStream = null;
+    let verifiedResetPhone = ""; // ভেরিফিকেশন সফল হলে ফোন নম্বর সেভ রাখার জন্য
 
     function initCountryCodes() {
         const selects = document.querySelectorAll(".country-select");
@@ -521,20 +527,28 @@
         });
     }
 
-    function openForgotModal() { document.getElementById("forgotModal").style.display = "flex"; }
-    function closeForgotModal() { document.getElementById("forgotModal").style.display = "none"; }
+    function openForgotModal() { 
+        document.getElementById("forgotStep1").style.display = "block";
+        document.getElementById("forgotStep2").style.display = "none";
+        document.getElementById("forgotModalTitle").innerText = "Security Verification";
+        document.getElementById("forgotModal").style.display = "flex"; 
+    }
+    
+    function closeForgotModal() { 
+        document.getElementById("forgotModal").style.display = "none"; 
+    }
 
-    function handleResetPassword() {
+    // প্রথম ধাপ: তথ্য যাচাই করা
+    function verifyForgotData() {
         const phoneRaw = document.getElementById("resetPhone").value.replace(/[^0-9]/g, '');
         const countryCode = document.getElementById("resetCountryCode").value;
         const fullPhone = countryCode + phoneRaw;
         const dobInput = document.getElementById("resetDob").value;
         const secQ = document.getElementById("resetSecQuestion").value;
         const secA = document.getElementById("resetSecAnswer").value.trim().toLowerCase();
-        const newPass = document.getElementById("newPassInput").value;
 
-        if (!phoneRaw || !dobInput || !newPass) {
-            return alert("Phone, Date of Birth, and New Password are required!");
+        if (!phoneRaw || !dobInput || !secA) {
+            return alert("Phone, Date of Birth, and Security Answer are required!");
         }
 
         db.ref("users/" + fullPhone).once("value", snap => {
@@ -542,21 +556,15 @@
                 const uData = snap.val();
                 if (!uData.secQ) {
                     if (uData.dob === dobInput) {
-                        db.ref("users/" + fullPhone + "/pass").set(newPass).then(() => {
-                            alert("Password reset successfully! Please login.");
-                            closeForgotModal();
-                        });
+                        verifiedResetPhone = fullPhone;
+                        switchToNewPasswordStep();
                     } else {
                         alert("Date of Birth did not match!");
                     }
                 } else {
-                    if (!secA) return alert("Please provide your Security Answer!");
-                    
                     if (uData.dob === dobInput && uData.secQ === secQ && uData.secA === secA) {
-                        db.ref("users/" + fullPhone + "/pass").set(newPass).then(() => {
-                            alert("Password reset successfully! Please login.");
-                            closeForgotModal();
-                        });
+                        verifiedResetPhone = fullPhone;
+                        switchToNewPasswordStep();
                     } else {
                         alert("Verification details failed!");
                     }
@@ -564,6 +572,23 @@
             } else {
                 alert("Phone number not registered!");
             }
+        });
+    }
+
+    function switchToNewPasswordStep() {
+        document.getElementById("forgotStep1").style.display = "none";
+        document.getElementById("forgotStep2").style.display = "block";
+        document.getElementById("forgotModalTitle").innerText = "Set New Password";
+    }
+
+    // দ্বিতীয় ধাপ: নতুন পাসওয়ার্ড সেভ করা
+    function handleResetPassword() {
+        const newPass = document.getElementById("newPassInput").value;
+        if (!newPass) return alert("Please enter a new password!");
+
+        db.ref("users/" + verifiedResetPhone + "/pass").set(newPass).then(() => {
+            alert("Password reset successfully! Please login.");
+            closeForgotModal();
         });
     }
 
@@ -679,21 +704,27 @@
         }, 300);
     }
 
-    /* Video & Audio Call Setup */
     async function startCall(type) {
         if (!activeChatTarget) return;
         const callOverlay = document.getElementById("callOverlay");
         const callStatus = document.getElementById("callStatus");
         callOverlay.style.display = "flex";
-        callStatus.innerText = `Starting ${type.toUpperCase()} call with ${activeChatTarget}...`;
+        callStatus.innerText = `Connecting ${type.toUpperCase()} call...`;
 
         try {
-            const constraints = { audio: true, video: type === 'video' };
+            const constraints = { 
+                audio: true, 
+                video: type === 'video' ? { width: 1280, height: 720 } : false 
+            };
+            
             localStream = await navigator.mediaDevices.getUserMedia(constraints);
-            document.getElementById("localVideo").srcObject = localStream;
-            document.getElementById("localVideo").style.display = type === 'video' ? 'block' : 'none';
+            const localVideo = document.getElementById("localVideo");
+            localVideo.srcObject = localStream;
+            localVideo.style.display = type === 'video' ? 'block' : 'none';
+            
+            callStatus.innerText = `${type.toUpperCase()} Call Active`;
         } catch (err) {
-            alert("Camera or Microphone access denied / failed!");
+            alert("ক্যামেরা বা মাইক্রোফোনের পারমিশন দেওয়া হয়নি অথবা ব্রাউজার ব্লক করে রেখেছে!");
             endCall();
         }
     }
@@ -703,6 +734,8 @@
             localStream.getTracks().forEach(track => track.stop());
             localStream = null;
         }
+        document.getElementById("localVideo").srcObject = null;
+        document.getElementById("remoteVideo").srcObject = null;
         document.getElementById("callOverlay").style.display = "none";
     }
 
@@ -723,7 +756,6 @@
         scrollToBottom();
     }
 
-    /* Location Sharing Feature */
     function sendLocation() {
         if (!activeChatTarget) return;
         if (navigator.geolocation) {
@@ -748,7 +780,6 @@
         }
     }
 
-    /* File Attachment Setup */
     function handleFileUpload(event) {
         const file = event.target.files[0];
         if (!file || !activeChatTarget) return;
