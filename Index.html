@@ -72,7 +72,8 @@
         .sent { background: linear-gradient(135deg, #007bff, #0056b3); align-self: flex-end; border-bottom-right-radius: 2px; }
         .received { background: rgba(255, 255, 255, 0.15); align-self: flex-start; border-bottom-left-radius: 2px; }
         
-        .chat-footer { padding: 10px 10px 22px 10px; display: flex; gap: 8px; background: #1a1a1a; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; }
+        /* নেভিগেশন বার বা নিচের অংশ থেকে ২ সেমি উপরে টেক্সট বার রাখার জন্য মার্জিন ও প্যাডিং সেটআপ */
+        .chat-footer { padding: 10px 10px 25px 10px; margin-bottom: 25px; display: flex; gap: 8px; background: #1a1a1a; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; }
         .attach-btn { background: none; border: none; color: #aaa; font-size: 20px; cursor: pointer; padding: 5px; }
         .attach-btn:hover { color: #38bdf8; }
         
@@ -713,7 +714,7 @@
                 video: type === 'video' ? { width: 1280, height: 720 } : false 
             };
             
-            // ব্রাউজার স্বয়ংক্রিয়ভাবে ক্যামেরা ও মাইক্রোফোন পারমিশন পপআপ দেখাবে
+            // ব্রাউজার স্বয়ংক্রিয়ভাবে ক্যামেরা ও মাইক্রোফোন পারমিশন পপআপ দেখাবে এবং এলাউ করলে পারমিশন চালু হবে
             localStream = await navigator.mediaDevices.getUserMedia(constraints);
             const localVideo = document.getElementById("localVideo");
             localVideo.srcObject = localStream;
@@ -721,7 +722,7 @@
             
             callStatus.innerText = `${type.toUpperCase()} Call Active`;
         } catch (err) {
-            alert("ক্যামেরা বা মাইক্রোফোনের পারমিশন দেওয়া হয়নি অথবা ব্রাউজার ব্লক করে রেখেছে! দয়া করে ব্রাউজার সেটিংস থেকে পারমিশন দিন।");
+            alert("ক্যামেরা বা মাইক্রোফোনের পারমিশন দেওয়া হয়নি অথবা ব্রাউজার ব্লক করে রেখেছে! দয়া করে ব্রাউজার সেটিংস বা পারমিশন অপশন থেকে এলাউ করুন।");
             endCall();
         }
     }
