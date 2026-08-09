@@ -6,7 +6,7 @@
     <title>Global Messenger</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Firebase core & Storage SDK -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
@@ -27,22 +27,41 @@
         
         input, select { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2); padding: 14px; color: white; border-radius: 12px; margin-bottom: 12px; width: 100%; outline: none; font-size: 15px; }
         input:focus, select:focus { border-color: #38bdf8; }
+        select option { background: #222; color: #fff; }
         
         .date-label { font-size: 12px; color: #aaa; margin-bottom: 5px; display: block; }
         .date-helper { font-size: 10px; color: #777; margin-bottom: 5px; font-style: italic; }
 
         .phone-container { display: flex; gap: 10px; }
-        .phone-container select { width: 35%; }
-        .phone-container input { width: 65%; }
+        .phone-container select { width: 40%; }
+        .phone-container input { width: 60%; }
 
         .btn { background: linear-gradient(135deg, #007bff, #00d2ff); color: white; padding: 14px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; font-size: 16px; }
         
-        #dashboard, #chatScreen { display: none; flex-direction: column; height: 100%; }
+        #dashboard, #chatScreen, #callScreen { display: none; flex-direction: column; height: 100%; }
+        
+        /* হেডারে ইউজারের নাম ও প্রোফাইল বাটন */
         .header { background: linear-gradient(135deg, #007bff, #0056b3); padding: 15px; display: flex; justify-content: space-between; align-items: center; color: white; }
-        .contact-item { background: rgba(255, 255, 255, 0.05); padding: 15px; margin-bottom: 8px; border-radius: 12px; cursor: pointer; }
+        .user-profile-badge { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .user-profile-badge i { font-size: 24px; color: #fff; }
+        .user-profile-badge span { font-weight: bold; font-size: 16px; }
+
+        /* নেভিগেশন ট্যাব */
+        .navigation-tabs { display: flex; background: rgba(0,0,0,0.5); border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .nav-tab { flex: 1; padding: 14px; text-align: center; color: #888; cursor: pointer; font-size: 13px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .nav-tab.active { color: #38bdf8; border-bottom: 3px solid #38bdf8; background: rgba(255,255,255,0.05); }
+
+        .list-container { flex: 1; overflow-y: auto; padding: 12px; }
+
+        .contact-item { background: rgba(255, 255, 255, 0.05); padding: 15px; margin-bottom: 8px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+        .contact-info { display: flex; align-items: center; gap: 12px; }
+        .contact-item i { color: #38bdf8; font-size: 20px; }
+
+        .friend-count-badge { background: rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 8px; font-size: 13px; margin: 10px 12px 0 12px; color: #38bdf8; display: flex; justify-content: space-between; }
         
         .msg-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; }
         .msg { max-width: 80%; padding: 10px 14px; border-radius: 16px; margin-bottom: 10px; word-break: break-word; font-size: 14px; }
+        .sender-name { font-size: 10px; color: #38bdf8; margin-bottom: 3px; font-weight: bold; }
         .sent { background: linear-gradient(135deg, #007bff, #0056b3); align-self: flex-end; border-bottom-right-radius: 2px; }
         .received { background: rgba(255, 255, 255, 0.15); align-self: flex-start; border-bottom-left-radius: 2px; }
         
@@ -55,10 +74,17 @@
         .media-menu { display: none; position: absolute; bottom: 70px; left: 10px; background: #222; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 10px; gap: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 10; }
         .media-menu i { font-size: 20px; color: #38bdf8; cursor: pointer; }
 
-        /* প্রগ্রেস বার ডিজাইন */
         .progress-box { display: none; padding: 8px 15px; background: rgba(0,0,0,0.8); color: #38bdf8; font-size: 12px; border-top: 1px solid rgba(255,255,255,0.1); }
         .progress-bar { width: 100%; height: 6px; background: #333; border-radius: 3px; margin-top: 4px; overflow: hidden; }
         .progress-fill { height: 100%; background: #38bdf8; width: 0%; transition: width 0.2s; }
+        
+        /* ইউজার প্রোফাইল মডেল স্টাইল */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 100; justify-content: center; align-items: center; }
+        .modal-content { background: #1e1e1e; padding: 25px; border-radius: 16px; width: 85%; max-width: 350px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        .profile-icon-lg { font-size: 60px; color: #38bdf8; margin-bottom: 15px; }
+        .profile-info-box { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; margin: 10px 0; text-align: left; font-size: 14px; }
+        
+        #videoContainer { width: 100%; height: 100%; border: none; }
     </style>
 </head>
 <body>
@@ -78,11 +104,20 @@
 
         <div class="phone-container" id="phoneContainer">
             <select id="countryCode">
-                <option value="+880">🇧🇩 BD (+880)</option>
-                <option value="+91">🇮🇳 IN (+91)</option>
-                <option value="+92">🇵🇰 PK (+92)</option>
-                <option value="+1">🇺🇸 US (+1)</option>
+                <option value="+880">🇧🇩 Bangladesh (+880)</option>
+                <option value="+966">🇸🇦 Saudi Arabia (+966)</option>
+                <option value="+971">🇦🇪 UAE (+971)</option>
+                <option value="+91">🇮🇳 India (+91)</option>
+                <option value="+92">🇵🇰 Pakistan (+92)</option>
+                <option value="+1">🇺🇸 USA / Canada (+1)</option>
                 <option value="+44">🇬🇧 UK (+44)</option>
+                <option value="+974">🇶🇦 Qatar (+974)</option>
+                <option value="+965">🇰🇼 Kuwait (+965)</option>
+                <option value="+968">🇴🇲 Oman (+968)</option>
+                <option value="+973">🇧🇭 Bahrain (+973)</option>
+                <option value="+90">🇹🇷 Turkey (+90)</option>
+                <option value="+60">🇲🇾 Malaysia (+60)</option>
+                <option value="+65">🇸🇬 Singapore (+65)</option>
             </select>
             <input type="tel" id="phoneInput" placeholder="Phone Number">
         </div>
@@ -101,39 +136,82 @@
     <!-- Dashboard -->
     <div id="dashboard">
         <div class="header">
-            <span>Global Messenger</span>
-            <button onclick="logout()" style="background:none; border:none; color:white; cursor:pointer;"><i class="fas fa-sign-out-alt"></i></button>
+            <!-- ইউজারের নাম এখানে শো করবে -->
+            <div class="user-profile-badge" onclick="openProfileModal()">
+                <i class="fas fa-user-circle"></i>
+                <span id="displayUserName">User Name</span>
+            </div>
+            <button onclick="logout()" style="background:none; border:none; color:white; cursor:pointer;" title="Logout"><i class="fas fa-sign-out-alt" style="font-size:18px;"></i></button>
         </div>
-        <div style="padding: 12px;">
-            <input type="tel" id="targetPhone" placeholder="Friend's Number">
-            <button class="btn" onclick="addContact()">Start Chat</button>
+
+        <!-- নেভিগেশন বার -->
+        <div class="navigation-tabs">
+            <div class="nav-tab active" id="tabChatsBtn" onclick="switchMainTab('chats')">
+                <i class="fas fa-comments"></i> CHATS
+            </div>
+            <div class="nav-tab" id="tabCallsBtn" onclick="switchMainTab('calls')">
+                <i class="fas fa-phone-alt"></i> CALLS
+            </div>
+            <div class="nav-tab" id="tabGroupsBtn" onclick="switchMainTab('groups')">
+                <i class="fas fa-users"></i> GROUPS
+            </div>
         </div>
-        <div style="flex:1; overflow-y:auto; padding: 12px;" id="inboxList"></div>
+
+        <!-- ১. চ্যাট লিস্ট স্ক্রিন -->
+        <div id="tabChats" style="display:flex; flex-direction:column; flex:1;">
+            <div style="padding: 12px 12px 0 12px;">
+                <input type="tel" id="targetPhone" placeholder="Friend's Number (e.g. +88017...)">
+                <button class="btn" onclick="addContact()">Start Chat</button>
+            </div>
+            <div class="friend-count-badge">
+                <span>Total Friends:</span>
+                <strong id="friendCount">0</strong>
+            </div>
+            <div class="list-container" id="inboxList"></div>
+        </div>
+
+        <!-- ২. কল লিস্ট স্ক্রিন -->
+        <div id="tabCalls" style="display:none; flex-direction:column; flex:1;">
+            <div class="friend-count-badge">
+                <span>Call Records</span>
+                <i class="fas fa-history"></i>
+            </div>
+            <div class="list-container" id="callList"></div>
+        </div>
+
+        <!-- ৩. গ্রুপ স্ক্রিন -->
+        <div id="tabGroups" style="display:none; flex-direction:column; flex:1;">
+            <div style="padding: 12px 12px 0 12px;">
+                <input type="text" id="groupNameInput" placeholder="New Group Name">
+                <button class="btn" onclick="createGroup()">Create Group</button>
+            </div>
+            <div class="list-container" id="groupList"></div>
+        </div>
     </div>
 
     <!-- Chat Screen -->
     <div id="chatScreen">
         <div class="header">
             <button onclick="closeChat()" style="background:none; border:none; color:white;"><i class="fas fa-arrow-left"></i></button>
-            <span id="chatTitle">User</span>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <i class="fas fa-user-circle" id="chatIcon"></i>
+                <span id="chatTitle" style="font-weight:bold;">User</span>
+            </div>
             <div>
-                <i class="fas fa-phone-alt" style="margin-right:15px; cursor:pointer;"></i>
-                <i class="fas fa-video" style="cursor:pointer;"></i>
+                <i class="fas fa-phone-alt" style="margin-right:15px; cursor:pointer;" title="Voice Call" onclick="startCall(false)"></i>
+                <i class="fas fa-video" style="cursor:pointer;" title="Video Call" onclick="startCall(true)"></i>
             </div>
         </div>
         
         <div class="msg-area" id="msgArea"></div>
         
-        <!-- ফাইল প্রগ্রেস বার -->
         <div class="progress-box" id="progressBox">
             <span id="progressText">Uploading... 0%</span>
             <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
         </div>
 
-        <!-- হিডেন ফাইল ইনপুট -->
         <input type="file" id="filePicker" style="display:none;" onchange="uploadFile(this.files[0])">
 
-        <!-- ফাইল সিলেক্ট করার ভাসমান মেনু -->
         <div class="media-menu" id="mediaMenu">
             <i class="fas fa-image" title="Image" onclick="triggerFile('image/*')"></i>
             <i class="fas fa-video" title="Video" onclick="triggerFile('video/*')"></i>
@@ -148,6 +226,30 @@
             <button class="btn" style="width: auto; padding: 12px 16px;" onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
+
+    <!-- Call Screen -->
+    <div id="callScreen">
+        <div class="header">
+            <button onclick="endCall()" style="background:#ff3b30; border:none; color:white; padding: 8px 15px; border-radius:8px; cursor:pointer;"><i class="fas fa-phone-slash"></i> End Call</button>
+            <span id="callTitle">Active Call</span>
+        </div>
+        <div style="flex:1;" id="videoFrameArea"></div>
+    </div>
+
+    <!-- Profile View Modal (ফোন নাম্বার এখানে নিরাপদ থাকবে) -->
+    <div class="modal" id="profileModal">
+        <div class="modal-content">
+            <i class="fas fa-user-circle profile-icon-lg"></i>
+            <h3 id="modalUserName" style="color:#fff; margin-bottom:15px;">User Name</h3>
+            
+            <div class="profile-info-box">
+                <span style="color:#aaa; font-size:11px; display:block;">PHONE NUMBER:</span>
+                <strong id="modalUserPhone" style="color:#38bdf8; font-size:16px;">+880...</strong>
+            </div>
+
+            <button class="btn" onclick="closeProfileModal()" style="margin-top:15px;">Close Profile</button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -160,7 +262,9 @@
     const storage = firebase.storage();
 
     let isLoginMode = false;
-    
+    let isGroupChat = false;
+    let activeChatTarget = "";
+
     function toggleMode() {
         isLoginMode = !isLoginMode;
         document.getElementById("authTitle").innerText = isLoginMode ? "Login" : "Sign Up";
@@ -175,6 +279,8 @@
         const fullPhone = countryCode + phoneRaw; 
 
         const fname = document.getElementById("fname").value;
+        const lname = document.getElementById("lname").value;
+        const fullName = (fname + " " + lname).trim() || "Messenger User";
         const pass = document.getElementById("passInput").value;
         const confirmPass = document.getElementById("confirmPassInput").value;
 
@@ -192,47 +298,175 @@
                 if (snap.exists()) {
                     alert("Account already exists!");
                 } else {
-                    db.ref("users/" + fullPhone).set({ firstName: fname, pass: pass }).then(() => saveSession(fullPhone));
+                    db.ref("users/" + fullPhone).set({ name: fullName, pass: pass }).then(() => saveSession(fullPhone));
                 }
             });
         }
     }
 
     function saveSession(phone) { localStorage.setItem("gm_user", phone); showDashboard(); }
-    function showDashboard() { document.getElementById("auth").style.display = "none"; document.getElementById("dashboard").style.display = "flex"; loadContacts(); }
     
+    function showDashboard() { 
+        document.getElementById("auth").style.display = "none"; 
+        document.getElementById("dashboard").style.display = "flex"; 
+        
+        // ইউজার ইনফো লোড ও শো করা
+        loadUserProfile();
+        loadContacts(); 
+        loadGroups(); 
+        loadCalls(); 
+    }
+
+    /* ইউজার নাম ও নম্বর লোড করা */
+    function loadUserProfile() {
+        const userPhone = localStorage.getItem("gm_user");
+        db.ref("users/" + userPhone).once("value", snap => {
+            if(snap.exists()) {
+                const uData = snap.val();
+                const userName = uData.name || "User";
+                
+                // হেডারে ইউজারের নাম সেট করা
+                document.getElementById("displayUserName").innerText = userName;
+                
+                // প্রফেশনাল প্রোফাইল পপ-আপের ডেটা সেট করা
+                document.getElementById("modalUserName").innerText = userName;
+                document.getElementById("modalUserPhone").innerText = userPhone;
+            } else {
+                document.getElementById("displayUserName").innerText = userPhone;
+                document.getElementById("modalUserPhone").innerText = userPhone;
+            }
+        });
+    }
+
+    function openProfileModal() { document.getElementById("profileModal").style.display = "flex"; }
+    function closeProfileModal() { document.getElementById("profileModal").style.display = "none"; }
+
+    function switchMainTab(selectedTab) {
+        document.getElementById("tabChats").style.display = selectedTab === 'chats' ? 'flex' : 'none';
+        document.getElementById("tabCalls").style.display = selectedTab === 'calls' ? 'flex' : 'none';
+        document.getElementById("tabGroups").style.display = selectedTab === 'groups' ? 'flex' : 'none';
+
+        document.getElementById("tabChatsBtn").classList.toggle("active", selectedTab === 'chats');
+        document.getElementById("tabCallsBtn").classList.toggle("active", selectedTab === 'calls');
+        document.getElementById("tabGroupsBtn").classList.toggle("active", selectedTab === 'groups');
+    }
+
+    /* চ্যাট লিস্ট লোড (অন্য বন্ধুদের নাম/নম্বর) */
     function loadContacts() { 
         const user = localStorage.getItem("gm_user"); 
         db.ref("inbox/" + user).on("value", snap => { 
-            const list = document.getElementById("inboxList"); list.innerHTML = ""; 
+            const list = document.getElementById("inboxList"); 
+            list.innerHTML = ""; 
+            let count = 0;
             snap.forEach(child => { 
-                const div = document.createElement("div"); div.className = "contact-item"; div.innerText = child.key; 
-                div.onclick = () => openChat(child.key); list.appendChild(div); 
+                count++;
+                const friendPhone = child.key;
+                const div = document.createElement("div"); 
+                div.className = "contact-item"; 
+                
+                // বন্ধুদের নাম ডাটাবেজ থেকে নিয়ে দেখাবে
+                db.ref("users/" + friendPhone).once("value", uSnap => {
+                    const fName = (uSnap.exists() && uSnap.val().name) ? uSnap.val().name : friendPhone;
+                    div.innerHTML = `<div class="contact-info"><i class="fas fa-user-circle"></i> <span>${fName}</span></div><i class="fas fa-comment-alt" style="font-size:14px; color:#555;"></i>`; 
+                });
+
+                div.onclick = () => openChat(friendPhone, false); 
+                list.appendChild(div); 
             }); 
+            document.getElementById("friendCount").innerText = count;
         }); 
+    }
+
+    /* কল লিস্ট লোড */
+    function loadCalls() {
+        const user = localStorage.getItem("gm_user");
+        db.ref("calls/" + user).on("value", snap => {
+            const list = document.getElementById("callList");
+            list.innerHTML = "";
+            snap.forEach(child => {
+                const c = child.val();
+                const div = document.createElement("div");
+                div.className = "contact-item";
+                const isVideo = c.type === "Video";
+                div.innerHTML = `
+                    <div class="contact-info">
+                        <i class="${isVideo ? 'fas fa-video' : 'fas fa-phone-alt'}" style="color:${isVideo ? '#38bdf8' : '#2ea44f'};"></i> 
+                        <div>
+                            <div style="font-size:14px; font-weight:bold;">${c.target}</div>
+                            <div style="font-size:11px; color:#aaa;">${c.time}</div>
+                        </div>
+                    </div>
+                    <span style="font-size:11px; background:rgba(255,255,255,0.1); padding:4px 8px; border-radius:4px; color:#38bdf8;">${c.type}</span>`;
+                
+                div.onclick = () => { openChat(c.target, false); };
+                list.appendChild(div);
+            });
+        });
+    }
+
+    /* গ্রুপ তৈরি ও লোড */
+    function createGroup() {
+        const name = document.getElementById("groupNameInput").value.trim();
+        if(!name) return alert("Enter Group Name!");
+        const groupId = "group_" + Date.now();
+        const user = localStorage.getItem("gm_user");
+        
+        db.ref("groups/" + groupId).set({
+            name: name,
+            members: { [user.replace('.', '_')]: true }
+        });
+        document.getElementById("groupNameInput").value = "";
+    }
+
+    function loadGroups() {
+        db.ref("groups").on("value", snap => {
+            const list = document.getElementById("groupList");
+            list.innerHTML = "";
+            snap.forEach(child => {
+                const gData = child.val();
+                const div = document.createElement("div");
+                div.className = "contact-item";
+                div.innerHTML = `<div class="contact-info"><i class="fas fa-users" style="color:#00d2ff;"></i> <span>${gData.name}</span></div><i class="fas fa-chevron-right" style="font-size:12px; color:#555;"></i>`;
+                div.onclick = () => openChat(child.key, true, gData.name);
+                list.appendChild(div);
+            });
+        });
     }
 
     function addContact() { 
         const user = localStorage.getItem("gm_user"); 
-        const target = document.getElementById("targetPhone").value; 
+        const target = document.getElementById("targetPhone").value.trim(); 
         if(!target) return alert("Enter number!"); 
         db.ref("inbox/" + user + "/" + target).set(true); 
         db.ref("inbox/" + target + "/" + user).set(true); 
-        openChat(target); 
+        document.getElementById("targetPhone").value = "";
+        openChat(target, false); 
     }
 
-    function openChat(target) { 
+    function openChat(target, groupMode = false, groupTitle = "") { 
         const user = localStorage.getItem("gm_user"); 
+        isGroupChat = groupMode;
+        activeChatTarget = target;
+
         document.getElementById("dashboard").style.display = "none"; 
         document.getElementById("chatScreen").style.display = "flex"; 
-        document.getElementById("chatTitle").innerText = target; 
+        
+        if(groupMode) {
+            document.getElementById("chatTitle").innerText = groupTitle;
+        } else {
+            db.ref("users/" + target).once("value", uSnap => {
+                document.getElementById("chatTitle").innerText = (uSnap.exists() && uSnap.val().name) ? uSnap.val().name : target;
+            });
+        }
+        
+        document.getElementById("chatIcon").className = groupMode ? "fas fa-users" : "fas fa-user-circle";
         document.getElementById("msgArea").innerHTML = "";
 
-        const roomId = [user, target].sort().join("_"); 
-        db.ref("chats/" + roomId).off();
-        db.ref("chats/" + roomId).on("child_added", snap => { 
-            const data = snap.val(); 
-            renderMessage(data, user);
+        const path = groupMode ? "group_chats/" + target : "chats/" + [user, target].sort().join("_");
+        
+        db.ref(path).off();
+        db.ref(path).on("child_added", snap => { 
+            renderMessage(snap.val(), user);
         }); 
     }
 
@@ -240,18 +474,22 @@
         const div = document.createElement("div"); 
         div.className = "msg " + (data.from == user ? "sent" : "received");
         
+        let senderHtml = (isGroupChat && data.from !== user) ? `<div class="sender-name">${data.fromName || data.from}</div>` : '';
+
         if (data.type === "text") {
-            div.innerText = data.text;
+            div.innerHTML = senderHtml + `<div>${data.text}</div>`;
         } else if (data.type === "image") {
-            div.innerHTML = `<img src="${data.url}" alt="Image">`;
+            div.innerHTML = senderHtml + `<img src="${data.url}" alt="Image">`;
         } else if (data.type === "video") {
-            div.innerHTML = `<video src="${data.url}" controls></video>`;
+            div.innerHTML = senderHtml + `<video src="${data.url}" controls></video>`;
         } else if (data.type === "audio") {
-            div.innerHTML = `<audio src="${data.url}" controls></audio>`;
+            div.innerHTML = senderHtml + `<audio src="${data.url}" controls></audio>`;
         } else if (data.type === "file") {
-            div.innerHTML = `<a href="${data.url}" target="_blank" download="${data.fileName}" style="color:#38bdf8;"><i class="fas fa-file-download"></i> ${data.fileName}</a>`;
+            div.innerHTML = senderHtml + `<a href="${data.url}" target="_blank" download="${data.fileName}" style="color:#38bdf8;"><i class="fas fa-file-download"></i> ${data.fileName}</a>`;
         } else if (data.type === "location") {
-            div.innerHTML = `<a href="${data.url}" target="_blank" style="color:#38bdf8;"><i class="fas fa-map-marked-alt"></i> View Shared Location</a>`;
+            div.innerHTML = senderHtml + `<a href="${data.url}" target="_blank" style="color:#38bdf8;"><i class="fas fa-map-marked-alt"></i> View Location</a>`;
+        } else if (data.type === "call") {
+            div.innerHTML = senderHtml + `<div style="color:#38bdf8;"><i class="fas fa-video"></i> Group Call Started! <button onclick="joinCall('${data.room}')" style="background:#007bff; border:none; color:white; padding:4px 8px; border-radius:5px; cursor:pointer; margin-left:5px;">Join</button></div>`;
         }
 
         const area = document.getElementById("msgArea");
@@ -268,10 +506,52 @@
 
     function pushToFirebase(payload) {
         const user = localStorage.getItem("gm_user"); 
-        const target = document.getElementById("chatTitle").innerText; 
+        const currentName = document.getElementById("displayUserName").innerText;
         payload.from = user;
-        db.ref("chats/" + [user, target].sort().join("_")).push(payload);
+        payload.fromName = currentName;
+
+        const path = isGroupChat ? "group_chats/" + activeChatTarget : "chats/" + [user, activeChatTarget].sort().join("_");
+        db.ref(path).push(payload);
         document.getElementById("mediaMenu").style.display = "none";
+    }
+
+    function startCall(isVideo) {
+        const roomName = "GM_Call_" + activeChatTarget.replace(/[^a-zA-Z0-9]/g, '');
+        const user = localStorage.getItem("gm_user");
+
+        const callData = { 
+            target: activeChatTarget, 
+            time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
+            type: isVideo ? "Video" : "Voice" 
+        };
+        
+        db.ref("calls/" + user).push(callData);
+
+        if (isGroupChat) {
+            pushToFirebase({ type: "call", room: roomName });
+        }
+        
+        joinCall(roomName);
+    }
+
+    function joinCall(roomName) {
+        document.getElementById("chatScreen").style.display = "none";
+        document.getElementById("callScreen").style.display = "flex";
+        
+        const iframe = document.createElement("iframe");
+        iframe.id = "videoContainer";
+        iframe.src = `https://meet.jit.si/${roomName}#config.prejoinPageEnabled=false`;
+        iframe.allow = "camera; microphone; fullscreen; display-capture";
+        
+        const area = document.getElementById("videoFrameArea");
+        area.innerHTML = "";
+        area.appendChild(iframe);
+    }
+
+    function endCall() {
+        document.getElementById("videoFrameArea").innerHTML = "";
+        document.getElementById("callScreen").style.display = "none";
+        document.getElementById("chatScreen").style.display = "flex";
     }
 
     function toggleMediaMenu() {
@@ -285,23 +565,15 @@
         picker.click();
     }
 
-    /* ৫০ এমবি ফিক্সড ফাইল আপলোড লজিক (Firebase Storage সহ) */
     function uploadFile(file) {
         if (!file) return;
-        
-        // ফাইল সাইজ লিমিট (30 MB)
-        if (file.size > 30 * 1024 * 1024) { 
-            return alert("ফাইল সাইজ ৩০ এমবি-র বেশি! অনুগ্রহ করে ৩০ এমবি-র মধ্যে ফাইল সিলেক্ট করুন।");
-        }
+        if (file.size > 30 * 1024 * 1024) return alert("File exceeds 30MB!");
 
         const pBox = document.getElementById("progressBox");
         const pFill = document.getElementById("progressFill");
         const pText = document.getElementById("progressText");
-        
         pBox.style.display = "block";
-        document.getElementById("mediaMenu").style.display = "none";
 
-        // ফায়ারবেস স্টোরেজে আপলোড প্রসেস
         const fileRef = storage.ref('chat_files/' + Date.now() + '_' + file.name);
         const task = fileRef.put(file);
 
@@ -311,10 +583,7 @@
                 pFill.style.width = percentage + "%";
                 pText.innerText = "Uploading... " + percentage + "%";
             }, 
-            (err) => {
-                alert("ফাইল আপলোড ব্যর্থ হয়েছে: " + err.message);
-                pBox.style.display = "none";
-            }, 
+            (err) => alert("Upload failed: " + err.message), 
             () => {
                 task.snapshot.ref.getDownloadURL().then((downloadUrl) => {
                     let fileType = "file";
@@ -322,14 +591,8 @@
                     else if (file.type.startsWith("video/")) fileType = "video";
                     else if (file.type.startsWith("audio/")) fileType = "audio";
 
-                    pushToFirebase({ 
-                        type: fileType, 
-                        url: downloadUrl,
-                        fileName: file.name
-                    });
-
+                    pushToFirebase({ type: fileType, url: downloadUrl, fileName: file.name });
                     pBox.style.display = "none";
-                    pFill.style.width = "0%";
                     document.getElementById("filePicker").value = "";
                 });
             }
@@ -341,9 +604,7 @@
             navigator.geolocation.getCurrentPosition(position => {
                 const mapUrl = `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}`;
                 pushToFirebase({ type: "location", url: mapUrl });
-            }, () => alert("Location permission denied."));
-        } else {
-            alert("Geolocation not supported.");
+            });
         }
     }
 
