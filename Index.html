@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -25,37 +25,39 @@
         .card { background: var(--card); backdrop-filter: blur(10px); width: 100%; max-width: 450px; height: 100%; display: flex; flex-direction: column; position: relative; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); }
         .auth-screen { display: flex; flex-direction: column; justify-content: center; padding: 25px; height: 100%; overflow-y: auto; }
         
-        input, select { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2); padding: 14px; color: white; border-radius: 12px; margin-bottom: 12px; width: 100%; outline: none; font-size: 15px; }
+        input, select { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2); padding: 12px; color: white; border-radius: 12px; margin-bottom: 10px; width: 100%; outline: none; font-size: 14px; }
         input:focus, select:focus { border-color: #38bdf8; }
         select option { background: #222; color: #fff; }
         
-        .date-label { font-size: 12px; color: #aaa; margin-bottom: 5px; display: block; }
-        .date-helper { font-size: 10px; color: #777; margin-bottom: 5px; font-style: italic; }
+        .password-container { position: relative; width: 100%; }
+        .password-container input { padding-right: 45px; }
+        .toggle-password { position: absolute; right: 15px; top: 15px; color: #aaa; cursor: pointer; font-size: 16px; z-index: 5; }
+        .toggle-password:hover { color: #38bdf8; }
+
+        .date-label { font-size: 12px; color: #aaa; margin-bottom: 4px; display: block; }
 
         .phone-container { display: flex; gap: 10px; }
         .phone-container select { width: 40%; }
         .phone-container input { width: 60%; }
 
-        .btn { background: linear-gradient(135deg, #007bff, #00d2ff); color: white; padding: 14px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; font-size: 16px; }
+        .btn { background: linear-gradient(135deg, #007bff, #00d2ff); color: white; padding: 12px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; font-size: 15px; }
         
         #dashboard, #chatScreen, #callScreen { display: none; flex-direction: column; height: 100%; }
         
-        /* হেডারে ইউজারের নাম ও প্রোফাইল বাটন */
         .header { background: linear-gradient(135deg, #007bff, #0056b3); padding: 15px; display: flex; justify-content: space-between; align-items: center; color: white; }
         .user-profile-badge { display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .user-profile-badge i { font-size: 24px; color: #fff; }
         .user-profile-badge span { font-weight: bold; font-size: 16px; }
 
-        /* নেভিগেশন ট্যাব */
         .navigation-tabs { display: flex; background: rgba(0,0,0,0.5); border-bottom: 1px solid rgba(255,255,255,0.1); }
         .nav-tab { flex: 1; padding: 14px; text-align: center; color: #888; cursor: pointer; font-size: 13px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .nav-tab.active { color: #38bdf8; border-bottom: 3px solid #38bdf8; background: rgba(255,255,255,0.05); }
 
         .list-container { flex: 1; overflow-y: auto; padding: 12px; }
 
-        .contact-item { background: rgba(255, 255, 255, 0.05); padding: 15px; margin-bottom: 8px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+        .contact-item { background: rgba(255, 255, 255, 0.05); padding: 12px; margin-bottom: 8px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
         .contact-info { display: flex; align-items: center; gap: 12px; }
-        .contact-item i { color: #38bdf8; font-size: 20px; }
+        .contact-item i.avatar { color: #38bdf8; font-size: 26px; }
 
         .friend-count-badge { background: rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 8px; font-size: 13px; margin: 10px 12px 0 12px; color: #38bdf8; display: flex; justify-content: space-between; }
         
@@ -65,26 +67,16 @@
         .sent { background: linear-gradient(135deg, #007bff, #0056b3); align-self: flex-end; border-bottom-right-radius: 2px; }
         .received { background: rgba(255, 255, 255, 0.15); align-self: flex-start; border-bottom-left-radius: 2px; }
         
-        .msg img, .msg video { max-width: 100%; border-radius: 8px; margin-top: 5px; }
-        .msg audio { width: 100%; margin-top: 5px; }
-        
         .chat-footer { padding: 10px; display: flex; gap: 6px; background: #1a1a1a; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); }
         .attach-btn { background: rgba(255,255,255,0.1); border: none; color: #38bdf8; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; flex-shrink: 0; }
         
-        .media-menu { display: none; position: absolute; bottom: 70px; left: 10px; background: #222; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 10px; gap: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 10; }
-        .media-menu i { font-size: 20px; color: #38bdf8; cursor: pointer; }
-
-        .progress-box { display: none; padding: 8px 15px; background: rgba(0,0,0,0.8); color: #38bdf8; font-size: 12px; border-top: 1px solid rgba(255,255,255,0.1); }
-        .progress-bar { width: 100%; height: 6px; background: #333; border-radius: 3px; margin-top: 4px; overflow: hidden; }
-        .progress-fill { height: 100%; background: #38bdf8; width: 0%; transition: width 0.2s; }
-        
-        /* ইউজার প্রোফাইল মডেল স্টাইল */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 100; justify-content: center; align-items: center; }
-        .modal-content { background: #1e1e1e; padding: 25px; border-radius: 16px; width: 85%; max-width: 350px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
-        .profile-icon-lg { font-size: 60px; color: #38bdf8; margin-bottom: 15px; }
-        .profile-info-box { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; margin: 10px 0; text-align: left; font-size: 14px; }
-        
-        #videoContainer { width: 100%; height: 100%; border: none; }
+        .modal-content { background: #1e1e1e; padding: 20px; border-radius: 16px; width: 85%; max-width: 380px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        .profile-icon-lg { font-size: 55px; color: #38bdf8; margin-bottom: 10px; }
+        .profile-info-box { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin: 8px 0; text-align: left; font-size: 13px; }
+        .privacy-tag { font-size: 11px; padding: 3px 6px; border-radius: 4px; display: inline-block; margin-top: 4px; }
+        .privacy-private { background: rgba(255, 59, 48, 0.2); color: #ff453a; }
+        .privacy-public { background: rgba(52, 199, 89, 0.2); color: #30d158; }
     </style>
 </head>
 <body>
@@ -92,14 +84,21 @@
 <div class="card">
     <!-- Auth Screen -->
     <div id="auth" class="auth-screen">
-        <h2 id="authTitle" style="text-align: center; color: #38bdf8; margin-bottom: 20px;">Sign Up</h2>
+        <h2 id="authTitle" style="text-align: center; color: #38bdf8; margin-bottom: 15px;">Sign Up</h2>
         
         <div id="regInputs">
             <input type="text" id="fname" placeholder="First Name">
             <input type="text" id="lname" placeholder="Last Name">
             <label class="date-label">Date of Birth</label>
-            <div class="date-helper">Format: DD / MM / YYYY</div>
             <input type="date" id="dob">
+            
+            <label class="date-label">Security Question (Password Recovery-এর জন্য)</label>
+            <select id="secQuestion">
+                <option value="school">What was your first school name?</option>
+                <option value="pet">What is your favorite pet's name?</option>
+                <option value="city">In which city were you born?</option>
+            </select>
+            <input type="text" id="secAnswer" placeholder="Your Security Answer">
         </div>
 
         <div class="phone-container" id="phoneContainer">
@@ -109,77 +108,97 @@
                 <option value="+971">🇦🇪 UAE (+971)</option>
                 <option value="+91">🇮🇳 India (+91)</option>
                 <option value="+92">🇵🇰 Pakistan (+92)</option>
-                <option value="+1">🇺🇸 USA / Canada (+1)</option>
-                <option value="+44">🇬🇧 UK (+44)</option>
-                <option value="+974">🇶🇦 Qatar (+974)</option>
-                <option value="+965">🇰🇼 Kuwait (+965)</option>
-                <option value="+968">🇴🇲 Oman (+968)</option>
-                <option value="+973">🇧🇭 Bahrain (+973)</option>
-                <option value="+90">🇹🇷 Turkey (+90)</option>
-                <option value="+60">🇲🇾 Malaysia (+60)</option>
-                <option value="+65">🇸🇬 Singapore (+65)</option>
+                <option value="+1">🇺🇸 USA (+1)</option>
             </select>
             <input type="tel" id="phoneInput" placeholder="Phone Number">
         </div>
         
-        <input type="password" id="passInput" placeholder="Password">
-        <div id="confirmPassBox">
+        <div class="password-container">
+            <input type="password" id="passInput" placeholder="Password">
+            <i class="fas fa-eye toggle-password" onclick="togglePasswordVisibility('passInput', this)"></i>
+        </div>
+
+        <div id="confirmPassBox" class="password-container">
             <input type="password" id="confirmPassInput" placeholder="Confirm Password">
+            <i class="fas fa-eye toggle-password" onclick="togglePasswordVisibility('confirmPassInput', this)"></i>
         </div>
         
-        <button class="btn" id="mainBtn" onclick="handleAuth()">Sign Up</button>
-        <p style="text-align: center; margin-top: 20px; font-size: 14px; cursor: pointer;" onclick="toggleMode()">
+        <button class="btn" id="mainBtn" onclick="handleAuth()" style="margin-top: 10px;">Sign Up</button>
+
+        <p id="forgotPassLink" style="text-align: center; margin-top: 12px; font-size: 13px; display: none;">
+            <a href="javascript:void(0)" onclick="openForgotModal()" style="color: #38bdf8; text-decoration: none;">Forgot Password?</a>
+        </p>
+
+        <p style="text-align: center; margin-top: 12px; font-size: 14px; cursor: pointer;" onclick="toggleMode()">
             <span id="toggleText">Already have an account?</span> <b id="toggleBtn" style="color: #38bdf8;">Login</b>
         </p>
+    </div>
+
+    <!-- Forgot Password Modal (নিরাপদ ভেরিফিকেশন সহ) -->
+    <div class="modal" id="forgotModal">
+        <div class="modal-content">
+            <i class="fas fa-shield-alt profile-icon-lg"></i>
+            <h3 style="color:#fff; margin-bottom:10px;">Security Verification</h3>
+            
+            <div class="phone-container" style="margin-bottom: 8px;">
+                <select id="resetCountryCode">
+                    <option value="+880">🇧🇩 (+880)</option>
+                    <option value="+966">🇸🇦 (+966)</option>
+                    <option value="+971">🇦🇪 (+971)</option>
+                </select>
+                <input type="tel" id="resetPhone" placeholder="Registered Phone">
+            </div>
+
+            <input type="date" id="resetDob">
+            
+            <select id="resetSecQuestion">
+                <option value="school">What was your first school name?</option>
+                <option value="pet">What is your favorite pet's name?</option>
+                <option value="city">In which city were you born?</option>
+            </select>
+            <input type="text" id="resetSecAnswer" placeholder="Your Security Answer">
+
+            <div class="password-container">
+                <input type="password" id="newPassInput" placeholder="New Password">
+                <i class="fas fa-eye toggle-password" onclick="togglePasswordVisibility('newPassInput', this)"></i>
+            </div>
+
+            <button class="btn" onclick="handleResetPassword()" style="margin-top:10px;">Reset Password</button>
+            <button class="btn" onclick="closeForgotModal()" style="margin-top:8px; background: rgba(255,255,255,0.1); color:#ccc;">Cancel</button>
+        </div>
     </div>
 
     <!-- Dashboard -->
     <div id="dashboard">
         <div class="header">
-            <!-- ইউজারের নাম এখানে শো করবে -->
-            <div class="user-profile-badge" onclick="openProfileModal()">
+            <div class="user-profile-badge" onclick="openProfileModal(currentUserPhone, true)">
                 <i class="fas fa-user-circle"></i>
-                <span id="displayUserName">User Name</span>
+                <span id="displayUserName">Loading...</span>
             </div>
             <button onclick="logout()" style="background:none; border:none; color:white; cursor:pointer;" title="Logout"><i class="fas fa-sign-out-alt" style="font-size:18px;"></i></button>
         </div>
 
-        <!-- নেভিগেশন বার -->
         <div class="navigation-tabs">
             <div class="nav-tab active" id="tabChatsBtn" onclick="switchMainTab('chats')">
                 <i class="fas fa-comments"></i> CHATS
-            </div>
-            <div class="nav-tab" id="tabCallsBtn" onclick="switchMainTab('calls')">
-                <i class="fas fa-phone-alt"></i> CALLS
             </div>
             <div class="nav-tab" id="tabGroupsBtn" onclick="switchMainTab('groups')">
                 <i class="fas fa-users"></i> GROUPS
             </div>
         </div>
 
-        <!-- ১. চ্যাট লিস্ট স্ক্রিন -->
         <div id="tabChats" style="display:flex; flex-direction:column; flex:1;">
             <div style="padding: 12px 12px 0 12px;">
                 <input type="tel" id="targetPhone" placeholder="Friend's Number (e.g. +88017...)">
-                <button class="btn" onclick="addContact()">Start Chat</button>
+                <button class="btn" onclick="addContact()">Add / Chat Friend</button>
             </div>
             <div class="friend-count-badge">
-                <span>Total Friends:</span>
+                <span>Friends List</span>
                 <strong id="friendCount">0</strong>
             </div>
             <div class="list-container" id="inboxList"></div>
         </div>
 
-        <!-- ২. কল লিস্ট স্ক্রিন -->
-        <div id="tabCalls" style="display:none; flex-direction:column; flex:1;">
-            <div class="friend-count-badge">
-                <span>Call Records</span>
-                <i class="fas fa-history"></i>
-            </div>
-            <div class="list-container" id="callList"></div>
-        </div>
-
-        <!-- ৩. গ্রুপ স্ক্রিন -->
         <div id="tabGroups" style="display:none; flex-direction:column; flex:1;">
             <div style="padding: 12px 12px 0 12px;">
                 <input type="text" id="groupNameInput" placeholder="New Group Name">
@@ -193,61 +212,49 @@
     <div id="chatScreen">
         <div class="header">
             <button onclick="closeChat()" style="background:none; border:none; color:white;"><i class="fas fa-arrow-left"></i></button>
-            <div style="display:flex; align-items:center; gap:8px;">
+            <div style="display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="openProfileModal(activeChatTarget, false)">
                 <i class="fas fa-user-circle" id="chatIcon"></i>
                 <span id="chatTitle" style="font-weight:bold;">User</span>
             </div>
-            <div>
-                <i class="fas fa-phone-alt" style="margin-right:15px; cursor:pointer;" title="Voice Call" onclick="startCall(false)"></i>
-                <i class="fas fa-video" style="cursor:pointer;" title="Video Call" onclick="startCall(true)"></i>
-            </div>
+            <div></div>
         </div>
         
         <div class="msg-area" id="msgArea"></div>
-        
-        <div class="progress-box" id="progressBox">
-            <span id="progressText">Uploading... 0%</span>
-            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-        </div>
-
-        <input type="file" id="filePicker" style="display:none;" onchange="uploadFile(this.files[0])">
-
-        <div class="media-menu" id="mediaMenu">
-            <i class="fas fa-image" title="Image" onclick="triggerFile('image/*')"></i>
-            <i class="fas fa-video" title="Video" onclick="triggerFile('video/*')"></i>
-            <i class="fas fa-music" title="Audio" onclick="triggerFile('audio/*')"></i>
-            <i class="fas fa-file-alt" title="Document" onclick="triggerFile('*/*')"></i>
-            <i class="fas fa-map-marker-alt" title="Location" onclick="sendLocation()"></i>
-        </div>
 
         <div class="chat-footer">
-            <button class="attach-btn" onclick="toggleMediaMenu()"><i class="fas fa-paperclip"></i></button>
             <input type="text" id="msgInput" placeholder="Message..." style="margin-bottom:0;">
             <button class="btn" style="width: auto; padding: 12px 16px;" onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 
-    <!-- Call Screen -->
-    <div id="callScreen">
-        <div class="header">
-            <button onclick="endCall()" style="background:#ff3b30; border:none; color:white; padding: 8px 15px; border-radius:8px; cursor:pointer;"><i class="fas fa-phone-slash"></i> End Call</button>
-            <span id="callTitle">Active Call</span>
-        </div>
-        <div style="flex:1;" id="videoFrameArea"></div>
-    </div>
-
-    <!-- Profile View Modal (ফোন নাম্বার এখানে নিরাপদ থাকবে) -->
+    <!-- Profile View Modal (নিজের এবং বন্ধুদের জন্য) -->
     <div class="modal" id="profileModal">
         <div class="modal-content">
             <i class="fas fa-user-circle profile-icon-lg"></i>
-            <h3 id="modalUserName" style="color:#fff; margin-bottom:15px;">User Name</h3>
+            <h3 id="modalUserName" style="color:#fff;">Loading...</h3>
             
             <div class="profile-info-box">
                 <span style="color:#aaa; font-size:11px; display:block;">PHONE NUMBER:</span>
-                <strong id="modalUserPhone" style="color:#38bdf8; font-size:16px;">+880...</strong>
+                <strong id="modalUserPhone" style="color:#38bdf8; font-size:14px;">...</strong>
             </div>
 
-            <button class="btn" onclick="closeProfileModal()" style="margin-top:15px;">Close Profile</button>
+            <!-- পাবলিক/প্রাইভেট ডাটা সেকশন -->
+            <div class="profile-info-box" id="modalExtraDataBox">
+                <span style="color:#aaa; font-size:11px; display:block;">ADDITIONAL DATA:</span>
+                <div id="modalExtraContent" style="color:#ddd; margin-top:4px;">Private</div>
+            </div>
+
+            <!-- ইউজার নিজের প্রোফাইল দেখলে পাবলিশ/হাইড টগল বাটন পাবে -->
+            <div id="selfPrivacyControls" style="display:none; margin-top:10px;">
+                <label style="font-size:12px; color:#aaa;">Public Data Visibility:</label>
+                <button class="btn" id="privacyToggleBtn" onclick="toggleDataPrivacy()" style="background:#333; margin-top:5px; font-size:12px;">Toggle Visibility</button>
+            </div>
+
+            <div id="friendChatAction" style="display:none; margin-top:10px;">
+                <button class="btn" onclick="startDirectChatFromProfile()">Start Chat</button>
+            </div>
+
+            <button class="btn" onclick="closeProfileModal()" style="margin-top:10px; background: rgba(255,255,255,0.1); color:#ccc;">Close</button>
         </div>
     </div>
 </div>
@@ -259,11 +266,25 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const storage = firebase.storage();
 
     let isLoginMode = false;
-    let isGroupChat = false;
+    let currentUserPhone = "";
     let activeChatTarget = "";
+    let viewingProfilePhone = "";
+    let currentSelfIsPublic = false;
+
+    function togglePasswordVisibility(inputId, icon) {
+        const input = document.getElementById(inputId);
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+        } else {
+            input.type = "password";
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+        }
+    }
 
     function toggleMode() {
         isLoginMode = !isLoginMode;
@@ -271,6 +292,7 @@
         document.getElementById("mainBtn").innerText = isLoginMode ? "Login" : "Sign Up";
         document.getElementById("regInputs").style.display = isLoginMode ? "none" : "block";
         document.getElementById("confirmPassBox").style.display = isLoginMode ? "none" : "block";
+        document.getElementById("forgotPassLink").style.display = isLoginMode ? "block" : "none";
     }
 
     function handleAuth() {
@@ -278,13 +300,10 @@
         const countryCode = document.getElementById("countryCode").value;
         const fullPhone = countryCode + phoneRaw; 
 
-        const fname = document.getElementById("fname").value;
-        const lname = document.getElementById("lname").value;
-        const fullName = (fname + " " + lname).trim() || "Messenger User";
-        const pass = document.getElementById("passInput").value;
-        const confirmPass = document.getElementById("confirmPassInput").value;
+        if(!phoneRaw) return alert("Enter phone number!");
 
         if (isLoginMode) {
+            const pass = document.getElementById("passInput").value;
             db.ref("users/" + fullPhone).once("value", snap => {
                 if (snap.exists() && snap.val().pass === pass) {
                     saveSession(fullPhone);
@@ -293,68 +312,100 @@
                 }
             });
         } else {
+            const fname = document.getElementById("fname").value.trim();
+            const lname = document.getElementById("lname").value.trim();
+            const dob = document.getElementById("dob").value;
+            const secQuestion = document.getElementById("secQuestion").value;
+            const secAnswer = document.getElementById("secAnswer").value.trim().toLowerCase();
+            const pass = document.getElementById("passInput").value;
+            const confirmPass = document.getElementById("confirmPassInput").value;
+
+            if(!fname || !lname) return alert("Please enter full name!");
+            if (!dob) return alert("Please select Date of Birth!");
+            if (!secAnswer) return alert("Please answer security question!");
             if (pass !== confirmPass) return alert("Passwords do not match!");
+
+            const fullName = fname + " " + lname;
+
             db.ref("users/" + fullPhone).once("value", snap => {
                 if (snap.exists()) {
-                    alert("Account already exists!");
+                    alert("Account already exists with this number!");
                 } else {
-                    db.ref("users/" + fullPhone).set({ name: fullName, pass: pass }).then(() => saveSession(fullPhone));
+                    db.ref("users/" + fullPhone).set({ 
+                        name: fullName, 
+                        dob: dob, 
+                        secQ: secQuestion, 
+                        secA: secAnswer, 
+                        pass: pass,
+                        isPublic: false
+                    }).then(() => saveSession(fullPhone));
                 }
             });
         }
     }
 
-    function saveSession(phone) { localStorage.setItem("gm_user", phone); showDashboard(); }
-    
-    function showDashboard() { 
-        document.getElementById("auth").style.display = "none"; 
-        document.getElementById("dashboard").style.display = "flex"; 
-        
-        // ইউজার ইনফো লোড ও শো করা
-        loadUserProfile();
-        loadContacts(); 
-        loadGroups(); 
-        loadCalls(); 
-    }
+    function openForgotModal() { document.getElementById("forgotModal").style.display = "flex"; }
+    function closeForgotModal() { document.getElementById("forgotModal").style.display = "none"; }
 
-    /* ইউজার নাম ও নম্বর লোড করা */
-    function loadUserProfile() {
-        const userPhone = localStorage.getItem("gm_user");
-        db.ref("users/" + userPhone).once("value", snap => {
-            if(snap.exists()) {
+    function handleResetPassword() {
+        const phoneRaw = document.getElementById("resetPhone").value.replace(/[^0-9]/g, '');
+        const countryCode = document.getElementById("resetCountryCode").value;
+        const fullPhone = countryCode + phoneRaw;
+        const dobInput = document.getElementById("resetDob").value;
+        const secQ = document.getElementById("resetSecQuestion").value;
+        const secA = document.getElementById("resetSecAnswer").value.trim().toLowerCase();
+        const newPass = document.getElementById("newPassInput").value;
+
+        if (!phoneRaw || !dobInput || !secA || !newPass) {
+            return alert("All fields are required!");
+        }
+
+        db.ref("users/" + fullPhone).once("value", snap => {
+            if (snap.exists()) {
                 const uData = snap.val();
-                const userName = uData.name || "User";
-                
-                // হেডারে ইউজারের নাম সেট করা
-                document.getElementById("displayUserName").innerText = userName;
-                
-                // প্রফেশনাল প্রোফাইল পপ-আপের ডেটা সেট করা
-                document.getElementById("modalUserName").innerText = userName;
-                document.getElementById("modalUserPhone").innerText = userPhone;
+                if (uData.dob === dobInput && uData.secQ === secQ && uData.secA === secA) {
+                    db.ref("users/" + fullPhone + "/pass").set(newPass).then(() => {
+                        alert("Password reset successfully! Please login.");
+                        closeForgotModal();
+                    });
+                } else {
+                    alert("Verification details (DOB or Security Answer) failed!");
+                }
             } else {
-                document.getElementById("displayUserName").innerText = userPhone;
-                document.getElementById("modalUserPhone").innerText = userPhone;
+                alert("Phone number not registered!");
             }
         });
     }
 
-    function openProfileModal() { document.getElementById("profileModal").style.display = "flex"; }
-    function closeProfileModal() { document.getElementById("profileModal").style.display = "none"; }
-
-    function switchMainTab(selectedTab) {
-        document.getElementById("tabChats").style.display = selectedTab === 'chats' ? 'flex' : 'none';
-        document.getElementById("tabCalls").style.display = selectedTab === 'calls' ? 'flex' : 'none';
-        document.getElementById("tabGroups").style.display = selectedTab === 'groups' ? 'flex' : 'none';
-
-        document.getElementById("tabChatsBtn").classList.toggle("active", selectedTab === 'chats');
-        document.getElementById("tabCallsBtn").classList.toggle("active", selectedTab === 'calls');
-        document.getElementById("tabGroupsBtn").classList.toggle("active", selectedTab === 'groups');
+    function saveSession(phone) { 
+        localStorage.setItem("gm_user", phone); 
+        currentUserPhone = phone;
+        showDashboard(); 
+    }
+    
+    function showDashboard() { 
+        currentUserPhone = localStorage.getItem("gm_user");
+        document.getElementById("auth").style.display = "none"; 
+        document.getElementById("dashboard").style.display = "flex"; 
+        loadUserProfile();
+        loadContacts(); 
+        loadGroups(); 
     }
 
-    /* চ্যাট লিস্ট লোড (অন্য বন্ধুদের নাম/নম্বর) */
+    /* নিজের প্রোফাইল নেম ড্যাশবোর্ডে লোড করা */
+    function loadUserProfile() {
+        db.ref("users/" + currentUserPhone).on("value", snap => {
+            if(snap.exists()) {
+                const uData = snap.val();
+                document.getElementById("displayUserName").innerText = uData.name || currentUserPhone;
+                currentSelfIsPublic = uData.isPublic || false;
+            }
+        });
+    }
+
+    /* ফ্রেন্ডলিস্ট তৈরি ও ফ্রেন্ডের আসল নাম ডাটাবেজ থেকে লোড করা */
     function loadContacts() { 
-        const user = localStorage.getItem("gm_user"); 
-        db.ref("inbox/" + user).on("value", snap => { 
+        db.ref("inbox/" + currentUserPhone).on("value", snap => { 
             const list = document.getElementById("inboxList"); 
             list.innerHTML = ""; 
             let count = 0;
@@ -364,90 +415,99 @@
                 const div = document.createElement("div"); 
                 div.className = "contact-item"; 
                 
-                // বন্ধুদের নাম ডাটাবেজ থেকে নিয়ে দেখাবে
                 db.ref("users/" + friendPhone).once("value", uSnap => {
-                    const fName = (uSnap.exists() && uSnap.val().name) ? uSnap.val().name : friendPhone;
-                    div.innerHTML = `<div class="contact-info"><i class="fas fa-user-circle"></i> <span>${fName}</span></div><i class="fas fa-comment-alt" style="font-size:14px; color:#555;"></i>`; 
+                    const friendName = (uSnap.exists() && uSnap.val().name) ? uSnap.val().name : friendPhone;
+                    div.innerHTML = `
+                        <div class="contact-info">
+                            <i class="fas fa-user-circle avatar"></i> 
+                            <div>
+                                <div style="font-weight:bold; font-size:15px; color:#fff;">${friendName}</div>
+                                <div style="font-size:12px; color:#aaa;">${friendPhone}</div>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right" style="font-size:14px; color:#555;"></i>`;
                 });
 
-                div.onclick = () => openChat(friendPhone, false); 
+                /* ক্লিক করলে সরাসরি চ্যাটের বদলে তার প্রোফাইল অন হবে */
+                div.onclick = () => openProfileModal(friendPhone, false); 
                 list.appendChild(div); 
             }); 
             document.getElementById("friendCount").innerText = count;
         }); 
     }
 
-    /* কল লিস্ট লোড */
-    function loadCalls() {
-        const user = localStorage.getItem("gm_user");
-        db.ref("calls/" + user).on("value", snap => {
-            const list = document.getElementById("callList");
-            list.innerHTML = "";
-            snap.forEach(child => {
-                const c = child.val();
-                const div = document.createElement("div");
-                div.className = "contact-item";
-                const isVideo = c.type === "Video";
-                div.innerHTML = `
-                    <div class="contact-info">
-                        <i class="${isVideo ? 'fas fa-video' : 'fas fa-phone-alt'}" style="color:${isVideo ? '#38bdf8' : '#2ea44f'};"></i> 
-                        <div>
-                            <div style="font-size:14px; font-weight:bold;">${c.target}</div>
-                            <div style="font-size:11px; color:#aaa;">${c.time}</div>
-                        </div>
-                    </div>
-                    <span style="font-size:11px; background:rgba(255,255,255,0.1); padding:4px 8px; border-radius:4px; color:#38bdf8;">${c.type}</span>`;
-                
-                div.onclick = () => { openChat(c.target, false); };
-                list.appendChild(div);
-            });
-        });
-    }
-
-    /* গ্রুপ তৈরি ও লোড */
-    function createGroup() {
-        const name = document.getElementById("groupNameInput").value.trim();
-        if(!name) return alert("Enter Group Name!");
-        const groupId = "group_" + Date.now();
-        const user = localStorage.getItem("gm_user");
+    /* প্রোফাইল পপ-আপ (নিজের ও বন্ধুদের জন্য আলাদা ভিউ) */
+    function openProfileModal(targetPhone, isSelf = false) {
+        viewingProfilePhone = targetPhone;
+        document.getElementById("profileModal").style.display = "flex";
         
-        db.ref("groups/" + groupId).set({
-            name: name,
-            members: { [user.replace('.', '_')]: true }
+        const selfControls = document.getElementById("selfPrivacyControls");
+        const friendAction = document.getElementById("friendChatAction");
+
+        if(isSelf || targetPhone === currentUserPhone) {
+            selfControls.style.display = "block";
+            friendAction.style.display = "none";
+        } else {
+            selfControls.style.display = "none";
+            friendAction.style.display = "block";
+        }
+
+        db.ref("users/" + targetPhone).once("value", snap => {
+            if(snap.exists()) {
+                const uData = snap.val();
+                document.getElementById("modalUserName").innerText = uData.name || "User";
+                document.getElementById("modalUserPhone").innerText = targetPhone;
+
+                const privacyBtn = document.getElementById("privacyToggleBtn");
+                if (uData.isPublic) {
+                    privacyBtn.innerText = "Public Data: ON (Click to Hide)";
+                    privacyBtn.style.background = "#28a745";
+                } else {
+                    privacyBtn.innerText = "Public Data: OFF (Click to Show)";
+                    privacyBtn.style.background = "#dc3545";
+                }
+
+                /* প্রাইভেসি ফিল্টারিং: অন্য কেউ প্রোফাইল দেখলে শর্তসাপেক্ষে ডাটা দেখাবে */
+                const extraContent = document.getElementById("modalExtraContent");
+                if(isSelf || targetPhone === currentUserPhone) {
+                    extraContent.innerHTML = `<b>Date of Birth:</b> ${uData.dob || 'N/A'} <br><span class="privacy-tag ${uData.isPublic ? 'privacy-public':'privacy-private'}">${uData.isPublic ? 'Publicly Visible' : 'Private'}</span>`;
+                } else {
+                    if(uData.isPublic) {
+                        extraContent.innerHTML = `<span style="color:#30d158;"><i class="fas fa-check-circle"></i> User details are public</span><br>Bio/Status: Member of Global Messenger`;
+                    } else {
+                        extraContent.innerHTML = `<span style="color:#ff453a;"><i class="fas fa-lock"></i> User details are set to Private</span>`;
+                    }
+                }
+            }
         });
-        document.getElementById("groupNameInput").value = "";
     }
 
-    function loadGroups() {
-        db.ref("groups").on("value", snap => {
-            const list = document.getElementById("groupList");
-            list.innerHTML = "";
-            snap.forEach(child => {
-                const gData = child.val();
-                const div = document.createElement("div");
-                div.className = "contact-item";
-                div.innerHTML = `<div class="contact-info"><i class="fas fa-users" style="color:#00d2ff;"></i> <span>${gData.name}</span></div><i class="fas fa-chevron-right" style="font-size:12px; color:#555;"></i>`;
-                div.onclick = () => openChat(child.key, true, gData.name);
-                list.appendChild(div);
-            });
+    function toggleDataPrivacy() {
+        const newStatus = !currentSelfIsPublic;
+        db.ref("users/" + currentUserPhone + "/isPublic").set(newStatus).then(() => {
+            currentSelfIsPublic = newStatus;
+            openProfileModal(currentUserPhone, true);
         });
     }
+
+    function startDirectChatFromProfile() {
+        closeProfileModal();
+        openChat(viewingProfilePhone, false);
+    }
+
+    function closeProfileModal() { document.getElementById("profileModal").style.display = "none"; }
 
     function addContact() { 
-        const user = localStorage.getItem("gm_user"); 
         const target = document.getElementById("targetPhone").value.trim(); 
         if(!target) return alert("Enter number!"); 
-        db.ref("inbox/" + user + "/" + target).set(true); 
-        db.ref("inbox/" + target + "/" + user).set(true); 
+        db.ref("inbox/" + currentUserPhone + "/" + target).set(true); 
+        db.ref("inbox/" + target + "/" + currentUserPhone).set(true); 
         document.getElementById("targetPhone").value = "";
-        openChat(target, false); 
+        openProfileModal(target, false); 
     }
 
     function openChat(target, groupMode = false, groupTitle = "") { 
-        const user = localStorage.getItem("gm_user"); 
-        isGroupChat = groupMode;
         activeChatTarget = target;
-
         document.getElementById("dashboard").style.display = "none"; 
         document.getElementById("chatScreen").style.display = "flex"; 
         
@@ -459,39 +519,19 @@
             });
         }
         
-        document.getElementById("chatIcon").className = groupMode ? "fas fa-users" : "fas fa-user-circle";
         document.getElementById("msgArea").innerHTML = "";
-
-        const path = groupMode ? "group_chats/" + target : "chats/" + [user, target].sort().join("_");
+        const path = groupMode ? "group_chats/" + target : "chats/" + [currentUserPhone, target].sort().join("_");
         
         db.ref(path).off();
         db.ref(path).on("child_added", snap => { 
-            renderMessage(snap.val(), user);
+            renderMessage(snap.val());
         }); 
     }
 
-    function renderMessage(data, user) {
+    function renderMessage(data) {
         const div = document.createElement("div"); 
-        div.className = "msg " + (data.from == user ? "sent" : "received");
-        
-        let senderHtml = (isGroupChat && data.from !== user) ? `<div class="sender-name">${data.fromName || data.from}</div>` : '';
-
-        if (data.type === "text") {
-            div.innerHTML = senderHtml + `<div>${data.text}</div>`;
-        } else if (data.type === "image") {
-            div.innerHTML = senderHtml + `<img src="${data.url}" alt="Image">`;
-        } else if (data.type === "video") {
-            div.innerHTML = senderHtml + `<video src="${data.url}" controls></video>`;
-        } else if (data.type === "audio") {
-            div.innerHTML = senderHtml + `<audio src="${data.url}" controls></audio>`;
-        } else if (data.type === "file") {
-            div.innerHTML = senderHtml + `<a href="${data.url}" target="_blank" download="${data.fileName}" style="color:#38bdf8;"><i class="fas fa-file-download"></i> ${data.fileName}</a>`;
-        } else if (data.type === "location") {
-            div.innerHTML = senderHtml + `<a href="${data.url}" target="_blank" style="color:#38bdf8;"><i class="fas fa-map-marked-alt"></i> View Location</a>`;
-        } else if (data.type === "call") {
-            div.innerHTML = senderHtml + `<div style="color:#38bdf8;"><i class="fas fa-video"></i> Group Call Started! <button onclick="joinCall('${data.room}')" style="background:#007bff; border:none; color:white; padding:4px 8px; border-radius:5px; cursor:pointer; margin-left:5px;">Join</button></div>`;
-        }
-
+        div.className = "msg " + (data.from == currentUserPhone ? "sent" : "received");
+        div.innerHTML = `<div>${data.text}</div>`;
         const area = document.getElementById("msgArea");
         area.appendChild(div);
         area.scrollTop = area.scrollHeight;
@@ -500,117 +540,50 @@
     function sendMsg() { 
         const text = document.getElementById("msgInput").value; 
         if(!text) return;
-        pushToFirebase({ type: "text", text: text });
+        const path = "chats/" + [currentUserPhone, activeChatTarget].sort().join("_");
+        db.ref(path).push({ from: currentUserPhone, text: text });
         document.getElementById("msgInput").value = ""; 
     }
 
-    function pushToFirebase(payload) {
-        const user = localStorage.getItem("gm_user"); 
-        const currentName = document.getElementById("displayUserName").innerText;
-        payload.from = user;
-        payload.fromName = currentName;
-
-        const path = isGroupChat ? "group_chats/" + activeChatTarget : "chats/" + [user, activeChatTarget].sort().join("_");
-        db.ref(path).push(payload);
-        document.getElementById("mediaMenu").style.display = "none";
+    function switchMainTab(selectedTab) {
+        document.getElementById("tabChats").style.display = selectedTab === 'chats' ? 'flex' : 'none';
+        document.getElementById("tabGroups").style.display = selectedTab === 'groups' ? 'flex' : 'none';
+        document.getElementById("tabChatsBtn").classList.toggle("active", selectedTab === 'chats');
+        document.getElementById("tabGroupsBtn").classList.toggle("active", selectedTab === 'groups');
     }
 
-    function startCall(isVideo) {
-        const roomName = "GM_Call_" + activeChatTarget.replace(/[^a-zA-Z0-9]/g, '');
-        const user = localStorage.getItem("gm_user");
-
-        const callData = { 
-            target: activeChatTarget, 
-            time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
-            type: isVideo ? "Video" : "Voice" 
-        };
-        
-        db.ref("calls/" + user).push(callData);
-
-        if (isGroupChat) {
-            pushToFirebase({ type: "call", room: roomName });
-        }
-        
-        joinCall(roomName);
+    function createGroup() {
+        const name = document.getElementById("groupNameInput").value.trim();
+        if(!name) return alert("Enter Group Name!");
+        const groupId = "group_" + Date.now();
+        db.ref("groups/" + groupId).set({ name: name });
+        document.getElementById("groupNameInput").value = "";
     }
 
-    function joinCall(roomName) {
-        document.getElementById("chatScreen").style.display = "none";
-        document.getElementById("callScreen").style.display = "flex";
-        
-        const iframe = document.createElement("iframe");
-        iframe.id = "videoContainer";
-        iframe.src = `https://meet.jit.si/${roomName}#config.prejoinPageEnabled=false`;
-        iframe.allow = "camera; microphone; fullscreen; display-capture";
-        
-        const area = document.getElementById("videoFrameArea");
-        area.innerHTML = "";
-        area.appendChild(iframe);
-    }
-
-    function endCall() {
-        document.getElementById("videoFrameArea").innerHTML = "";
-        document.getElementById("callScreen").style.display = "none";
-        document.getElementById("chatScreen").style.display = "flex";
-    }
-
-    function toggleMediaMenu() {
-        const menu = document.getElementById("mediaMenu");
-        menu.style.display = menu.style.display === "flex" ? "none" : "flex";
-    }
-
-    function triggerFile(acceptType) {
-        const picker = document.getElementById("filePicker");
-        picker.accept = acceptType;
-        picker.click();
-    }
-
-    function uploadFile(file) {
-        if (!file) return;
-        if (file.size > 30 * 1024 * 1024) return alert("File exceeds 30MB!");
-
-        const pBox = document.getElementById("progressBox");
-        const pFill = document.getElementById("progressFill");
-        const pText = document.getElementById("progressText");
-        pBox.style.display = "block";
-
-        const fileRef = storage.ref('chat_files/' + Date.now() + '_' + file.name);
-        const task = fileRef.put(file);
-
-        task.on('state_changed', 
-            (snapshot) => {
-                const percentage = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-                pFill.style.width = percentage + "%";
-                pText.innerText = "Uploading... " + percentage + "%";
-            }, 
-            (err) => alert("Upload failed: " + err.message), 
-            () => {
-                task.snapshot.ref.getDownloadURL().then((downloadUrl) => {
-                    let fileType = "file";
-                    if (file.type.startsWith("image/")) fileType = "image";
-                    else if (file.type.startsWith("video/")) fileType = "video";
-                    else if (file.type.startsWith("audio/")) fileType = "audio";
-
-                    pushToFirebase({ type: fileType, url: downloadUrl, fileName: file.name });
-                    pBox.style.display = "none";
-                    document.getElementById("filePicker").value = "";
-                });
-            }
-        );
-    }
-
-    function sendLocation() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(position => {
-                const mapUrl = `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}`;
-                pushToFirebase({ type: "location", url: mapUrl });
+    function loadGroups() {
+        db.ref("groups").on("value", snap => {
+            const list = document.getElementById("groupList");
+            list.innerHTML = "";
+            snap.forEach(child => {
+                const gData = child.val();
+                const div = document.createElement("div");
+                div.className = "contact-item";
+                div.innerHTML = `<div class="contact-info"><i class="fas fa-users" style="color:#00d2ff;"></i> <span>${gData.name}</span></div>`;
+                div.onclick = () => openChat(child.key, true, gData.name);
+                list.appendChild(div);
             });
-        }
+        });
     }
 
     function logout() { localStorage.removeItem("gm_user"); location.reload(); }
     function closeChat() { document.getElementById("chatScreen").style.display = "none"; document.getElementById("dashboard").style.display = "flex"; }
-    window.onload = () => { if(localStorage.getItem("gm_user")) showDashboard(); };
+    
+    window.onload = () => { 
+        if(localStorage.getItem("gm_user")) {
+            currentUserPhone = localStorage.getItem("gm_user");
+            showDashboard(); 
+        }
+    };
 </script>
 </body>
 </html>
