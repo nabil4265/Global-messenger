@@ -54,7 +54,7 @@
         .call-btn { background: none; border: none; color: white; font-size: 18px; cursor: pointer; transition: color 0.2s; }
         .call-btn:hover { color: #38bdf8; }
 
-        .navigation-tabs { display: flex; background: rgba(0,0,0,0.5); border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .navigation-tabs { display: flex; background: rgba(0,0,0,0.5); border-bottom: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; }
         .nav-tab { flex: 1; padding: 14px; text-align: center; color: #888; cursor: pointer; font-size: 13px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .nav-tab.active { color: #38bdf8; border-bottom: 3px solid #38bdf8; background: rgba(255,255,255,0.05); }
 
@@ -136,13 +136,12 @@
         </p>
     </div>
 
-    <!-- Forgot Password Modal (Multi-step verification) -->
+    <!-- Forgot Password Modal -->
     <div class="modal" id="forgotModal">
         <div class="modal-content">
             <i class="fas fa-shield-alt profile-icon-lg"></i>
             <h3 id="forgotModalTitle" style="color:#fff; margin-bottom:10px;">Security Verification</h3>
             
-            <!-- Step 1: Verification Form -->
             <div id="forgotStep1">
                 <div class="phone-container">
                     <select id="resetCountryCode" class="country-select"></select>
@@ -164,7 +163,6 @@
                 <button class="btn" onclick="verifyForgotData()" style="margin-top:10px;">Next</button>
             </div>
 
-            <!-- Step 2: New Password Form -->
             <div id="forgotStep2" style="display: none;">
                 <p style="font-size: 12px; color: #aaa; margin-bottom: 12px;">Verification successful! Please enter your new password.</p>
                 <div class="password-container">
@@ -215,7 +213,7 @@
             </div>
         </div>
 
-        <div id="tabChats" style="display:flex; flex-direction:column; flex:1;">
+        <div id="tabChats" style="display:flex; flex-direction:column; flex:1; overflow:hidden;">
             <div style="padding: 12px 12px 0 12px;">
                 <div class="phone-container">
                     <select id="searchCountryCode" class="country-select"></select>
@@ -230,7 +228,7 @@
             <div class="list-container" id="inboxList"></div>
         </div>
 
-        <div id="tabGroups" style="display:none; flex-direction:column; flex:1;">
+        <div id="tabGroups" style="display:none; flex-direction:column; flex:1; overflow:hidden;">
             <div style="padding: 12px 12px 0 12px;">
                 <input type="text" id="groupNameInput" placeholder="New Group Name">
                 <button class="btn" onclick="createGroup()">Create Group</button>
@@ -243,7 +241,7 @@
     <div id="chatScreen">
         <div class="header">
             <div style="display:flex; align-items:center; gap:10px;">
-                <button onclick="closeChat()" style="background:none; border:none; color:white;"><i class="fas fa-arrow-left"></i></button>
+                <button onclick="closeChat()" style="background:none; border:none; color:white; cursor:pointer;"><i class="fas fa-arrow-left"></i></button>
                 <div style="display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="openProfileModal(activeChatTarget, false)">
                     <i class="fas fa-user-circle" id="chatIcon"></i>
                     <span id="chatTitle" style="font-weight:bold;">User</span>
@@ -409,7 +407,7 @@
     let viewingProfilePhone = "";
     let currentSelfIsPublic = false;
     let localStream = null;
-    let verifiedResetPhone = ""; // ভেরিফিকেশন সফল হলে ফোন নম্বর সেভ রাখার জন্য
+    let verifiedResetPhone = "";
 
     function initCountryCodes() {
         const selects = document.querySelectorAll(".country-select");
@@ -538,7 +536,6 @@
         document.getElementById("forgotModal").style.display = "none"; 
     }
 
-    // প্রথম ধাপ: তথ্য যাচাই করা
     function verifyForgotData() {
         const phoneRaw = document.getElementById("resetPhone").value.replace(/[^0-9]/g, '');
         const countryCode = document.getElementById("resetCountryCode").value;
@@ -581,7 +578,6 @@
         document.getElementById("forgotModalTitle").innerText = "Set New Password";
     }
 
-    // দ্বিতীয় ধাপ: নতুন পাসওয়ার্ড সেভ করা
     function handleResetPassword() {
         const newPass = document.getElementById("newPassInput").value;
         if (!newPass) return alert("Please enter a new password!");
@@ -709,7 +705,7 @@
         const callOverlay = document.getElementById("callOverlay");
         const callStatus = document.getElementById("callStatus");
         callOverlay.style.display = "flex";
-        callStatus.innerText = `Connecting ${type.toUpperCase()} call...`;
+        callStatus.innerText = `Requesting ${type.toUpperCase()} call permission...`;
 
         try {
             const constraints = { 
@@ -717,6 +713,7 @@
                 video: type === 'video' ? { width: 1280, height: 720 } : false 
             };
             
+            // ব্রাউজার স্বয়ংক্রিয়ভাবে ক্যামেরা ও মাইক্রোফোন পারমিশন পপআপ দেখাবে
             localStream = await navigator.mediaDevices.getUserMedia(constraints);
             const localVideo = document.getElementById("localVideo");
             localVideo.srcObject = localStream;
@@ -724,7 +721,7 @@
             
             callStatus.innerText = `${type.toUpperCase()} Call Active`;
         } catch (err) {
-            alert("ক্যামেরা বা মাইক্রোফোনের পারমিশন দেওয়া হয়নি অথবা ব্রাউজার ব্লক করে রেখেছে!");
+            alert("ক্যামেরা বা মাইক্রোফোনের পারমিশন দেওয়া হয়নি অথবা ব্রাউজার ব্লক করে রেখেছে! দয়া করে ব্রাউজার সেটিংস থেকে পারমিশন দিন।");
             endCall();
         }
     }
