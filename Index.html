@@ -461,22 +461,28 @@
         const phoneRaw = document.getElementById("phoneInput").value.replace(/[^0-9]/g, '');
         const countryCode = document.getElementById("countryCode").value;
         const fullPhone = countryCode + phoneRaw; 
+        const pass = document.getElementById("passInput").value.trim();
 
-        if(!phoneRaw) return alert("Enter phone number!");
+        if(!phoneRaw) return alert("দয়া করে ফোন নম্বর দিন!");
+        if(!pass) return alert("দয়া করে পাসওয়ার্ড দিন!");
 
         if (isLoginMode) {
-            const pass = document.getElementById("passInput").value;
             db.ref("users/" + fullPhone).once("value", snap => {
-                if (snap.exists() && snap.val().pass === pass) {
-                    const uData = snap.val();
-                    if (!uData.secQ || !uData.secA) {
-                        currentUserPhone = fullPhone;
-                        document.getElementById("securitySetupModal").style.display = "flex";
+                if (snap.exists()) {
+                    const userData = snap.val();
+                    // পাসওয়ার্ড চেক করা হচ্ছে (স্ট্রিং ট্রিম করে)
+                    if (userData.pass && userData.pass.trim() === pass) {
+                        if (!userData.secQ || !userData.secA) {
+                            currentUserPhone = fullPhone;
+                            document.getElementById("securitySetupModal").style.display = "flex";
+                        } else {
+                            saveSession(fullPhone);
+                        }
                     } else {
-                        saveSession(fullPhone);
+                        alert("পাসওয়ার্ড ভুল হয়েছে! সঠিক পাসওয়ার্ড দিন।");
                     }
                 } else {
-                    alert("Invalid phone or password!");
+                    alert("এই নম্বরে কোনো অ্যাকাউন্ট রেজিস্টার্ড নেই!");
                 }
             });
         } else {
@@ -485,18 +491,17 @@
             const dob = document.getElementById("dob").value;
             const secQuestion = document.getElementById("secQuestion").value;
             const secAnswer = document.getElementById("secAnswer").value.trim().toLowerCase();
-            const pass = document.getElementById("passInput").value;
-            const confirmPass = document.getElementById("confirmPassInput").value;
+            const confirmPass = document.getElementById("confirmPassInput").value.trim();
 
             const fullName = (fname + " " + lname).trim() || "Messenger User";
 
-            if (!dob) return alert("Please select Date of Birth!");
-            if (!secAnswer) return alert("Please answer security question!");
-            if (pass !== confirmPass) return alert("Passwords do not match!");
+            if (!dob) return alert("দয়া করে জন্মতারিখ নির্বাচন করুন!");
+            if (!secAnswer) return alert("দয়া করে সিকিউরিটি প্রশ্নের উত্তর দিন!");
+            if (pass !== confirmPass) return alert("পাসওয়ার্ড দুটি মিলছে না!");
 
             db.ref("users/" + fullPhone).once("value", snap => {
                 if (snap.exists()) {
-                    alert("Account already exists with this number!");
+                    alert("এই নম্বর দিয়ে ইতিমধ্যে একটি অ্যাকাউন্ট তৈরি করা আছে!");
                 } else {
                     db.ref("users/" + fullPhone).set({ 
                         name: fullName, 
@@ -505,7 +510,12 @@
                         secA: secAnswer, 
                         pass: pass,
                         isPublic: false
-                    }).then(() => saveSession(fullPhone));
+                    }).then(() => {
+                        alert("রেজিস্ট্রেশন সফল হয়েছে!");
+                        saveSession(fullPhone);
+                    }).catch(err => {
+                        alert("ত্রুটি: ডেটা সংরক্ষণ করা যায়নি।");
+                    });
                 }
             });
         }
@@ -514,13 +524,13 @@
     function saveMigratedSecurity() {
         const q = document.getElementById("migrateSecQuestion").value;
         const a = document.getElementById("migrateSecAnswer").value.trim().toLowerCase();
-        if (!a) return alert("Please enter an answer!");
+        if (!a) return alert("দয়া করে উত্তর লিখুন!");
 
         db.ref("users/" + currentUserPhone).update({
             secQ: q,
             secA: a
         }).then(() => {
-            alert("Security Setup Complete!");
+            alert("সিকিউরিটি সেটআপ সম্পন্ন হয়েছে!");
             document.getElementById("securitySetupModal").style.display = "none";
             saveSession(currentUserPhone);
         });
@@ -546,45 +556,32 @@
         const secA = document.getElementById("resetSecAnswer").value.trim().toLowerCase();
 
         if (!phoneRaw || !dobInput || !secA) {
-            return alert("Phone, Date of Birth, and Security Answer are required!");
+            return alert("ফোন নম্বর, জন্মতারিখ এবং সিকিউরিটি উত্তর আবশ্যক!");
         }
 
         db.ref("users/" + fullPhone).once("value", snap => {
             if (snap.exists()) {
                 const uData = snap.val();
-                if (!uData.secQ) {
-                    if (uData.dob === dobInput) {
-                        verifiedResetPhone = fullPhone;
-                        switchToNewPasswordStep();
-                    } else {
-                        alert("Date of Birth did not match!");
-                    }
+                if (uData.dob === dobInput && uData.secA === secA) {
+                    verifiedResetPhone = fullPhone;
+                    document.getElementById("forgotStep1").style.display = "none";
+                    document.getElementById("forgotStep2").style.display = "block";
+                    document.getElementById("forgotModalTitle").innerText = "নতুন পাসওয়ার্ড সেট করুন";
                 } else {
-                    if (uData.dob === dobInput && uData.secQ === secQ && uData.secA === secA) {
-                        verifiedResetPhone = fullPhone;
-                        switchToNewPasswordStep();
-                    } else {
-                        alert("Verification details failed!");
-                    }
+                    alert("তথ্যগুলো সঠিক নয়!");
                 }
             } else {
-                alert("Phone number not registered!");
+                alert("এই নম্বরটি রেজিস্টার্ড নয়!");
             }
         });
     }
 
-    function switchToNewPasswordStep() {
-        document.getElementById("forgotStep1").style.display = "none";
-        document.getElementById("forgotStep2").style.display = "block";
-        document.getElementById("forgotModalTitle").innerText = "Set New Password";
-    }
-
     function handleResetPassword() {
-        const newPass = document.getElementById("newPassInput").value;
-        if (!newPass) return alert("Please enter a new password!");
+        const newPass = document.getElementById("newPassInput").value.trim();
+        if (!newPass) return alert("দয়া করে নতুন পাসওয়ার্ড দিন!");
 
-        db.ref("users/" + verifiedResetPhone + "/pass").set(newPass).then(() => {
-            alert("Password reset successfully! Please login.");
+        db.ref("users/" + verifiedResetPhone).update({ pass: newPass }).then(() => {
+            alert("পাসওয়ার্ড সফলভাবে পরিবর্তন করা হয়েছে! এখন লগইন করুন।");
             closeForgotModal();
         });
     }
@@ -597,13 +594,16 @@
     
     function showDashboard() { 
         currentUserPhone = localStorage.getItem("gm_user");
+        if (!currentUserPhone) return;
+        
         document.getElementById("auth").style.display = "none"; 
         document.getElementById("dashboard").style.display = "flex";
         
         db.ref("users/" + currentUserPhone).on("value", snap => {
             if (snap.exists()) {
-                document.getElementById("displayUserName").innerText = snap.val().name || "User";
-                currentSelfIsPublic = snap.val().isPublic || false;
+                const val = snap.val();
+                document.getElementById("displayUserName").innerText = val.name || "User";
+                currentSelfIsPublic = val.isPublic || false;
             }
         });
 
@@ -660,18 +660,18 @@
         const countryCode = document.getElementById("searchCountryCode").value;
         const target = countryCode + phoneRaw;
 
-        if (!phoneRaw) return alert("Enter friend's phone number!");
-        if (target === currentUserPhone) return alert("Cannot add yourself!");
+        if (!phoneRaw) return alert("বন্ধুর ফোন নম্বর লিখুন!");
+        if (target === currentUserPhone) return alert("নিজেকে বন্ধু হিসেবে যোগ করা যাবে না!");
 
         db.ref("users/" + target).once("value", snap => {
             if (snap.exists()) {
                 db.ref("friends/" + currentUserPhone + "/" + target).set(true);
                 db.ref("friends/" + target + "/" + currentUserPhone).set(true);
-                alert("Friend added successfully!");
+                alert("বন্ধু সফলভাবে যুক্ত হয়েছে!");
                 document.getElementById("targetPhone").value = "";
                 openChat(target, snap.val().name);
             } else {
-                alert("User not found!");
+                alert("এই নম্বরের কোনো ইউজার পাওয়া যায়নি!");
             }
         });
     }
@@ -701,7 +701,6 @@
         }, 300);
     }
 
-    // কলিং এবং ফায়ারবেস সিগন্যালিং সিস্টেম
     async function startCall(type) {
         if (!activeChatTarget) return;
         const callOverlay = document.getElementById("callOverlay");
@@ -710,7 +709,7 @@
         
         acceptBtn.style.display = "none";
         callOverlay.style.display = "flex";
-        callStatus.innerText = `Calling ${activeChatTarget}...`;
+        callStatus.innerText = `কল করা হচ্ছে...`;
 
         try {
             const constraints = { 
@@ -718,13 +717,11 @@
                 video: type === 'video' ? { width: 1280, height: 720 } : false 
             };
             
-            // ব্রাউজার থেকে ক্যামেরা এবং মাইক্রোফোনের পারমিশন চাওয়া হচ্ছে
             localStream = await navigator.mediaDevices.getUserMedia(constraints);
             const localVideo = document.getElementById("localVideo");
             localVideo.srcObject = localStream;
             localVideo.style.display = type === 'video' ? 'block' : 'none';
             
-            // ফায়ারবেসে সিগন্যাল পাঠানো হচ্ছে যেন অপর প্রান্তের ইউজারের কাছে কল রিং হয়
             db.ref("calls/" + activeChatTarget).set({
                 caller: currentUserPhone,
                 type: type,
@@ -732,9 +729,9 @@
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             });
 
-            callStatus.innerText = `${type.toUpperCase()} Call Ringing...`;
+            callStatus.innerText = `রিং হচ্ছে...`;
         } catch (err) {
-            alert("ক্যামেরা বা মাইক্রোফোনের পারমিশন পাওয়া যায়নি! ব্রাউজার সেটিংস থেকে পারমিশন এলাউ করুন।");
+            alert("ক্যামেরা বা মাইক্রোফোন পারমিশন পাওয়া যায়নি!");
             endCall();
         }
     }
@@ -750,7 +747,7 @@
                     const acceptBtn = document.getElementById("acceptCallBtn");
                     
                     callOverlay.style.display = "flex";
-                    callStatus.innerText = `Incoming ${data.type.toUpperCase()} Call from ${data.caller}`;
+                    callStatus.innerText = `${data.caller} থেকে ${data.type.toUpperCase()} কল এসেছে...`;
                     acceptBtn.style.display = "block";
                 } else if (data.status === "ended") {
                     endCall();
@@ -776,7 +773,7 @@
             localVideo.srcObject = localStream;
             localVideo.style.display = incomingCallData.type === 'video' ? 'block' : 'none';
 
-            callStatus.innerText = "Call Connected";
+            callStatus.innerText = "কল সংযুক্ত হয়েছে";
 
             db.ref("calls/" + currentUserPhone).update({
                 status: "connected"
@@ -840,10 +837,10 @@
                 });
                 scrollToBottom();
             }, () => {
-                alert("Location access failed or permission denied!");
+                alert("লোকেশন পারমিশন দেওয়া হয়নি!");
             });
         } else {
-            alert("Geolocation is not supported by this browser.");
+            alert("এই ব্রাউজারে লোকেশন সাপোর্ট করে না।");
         }
     }
 
@@ -853,7 +850,7 @@
 
         const maxFileSize = 3 * 1024 * 1024; // 3MB Limit
         if (file.size > maxFileSize) {
-            alert("ফাইল সাইজ বেশি বড়! ডাটাবেসের সুরক্ষার জন্য সর্বোচ্চ ৩ মেগাবাইট (3MB) পর্যন্ত ফাইল পাঠাতে পারবেন।");
+            alert("ফাইল সাইজ সর্বোচ্চ ৩ মেগাবাইট (3MB) এর কম হতে হবে!");
             event.target.value = ""; 
             return;
         }
@@ -902,7 +899,7 @@
                         msgDiv.innerText = data.msg;
                     }
 
-                    area.appendChild(msgDstDiv = msgDiv);
+                    area.appendChild(msgDiv);
                 });
                 scrollToBottom();
             }
@@ -951,12 +948,12 @@
     function closeProfileModal() { document.getElementById("profileModal").style.display = "none"; }
     function showEditNameBox() { document.getElementById("editNameBox").style.display = "block"; }
 
-    function saveNewName() {
+    function saveName() {
         const newName = document.getElementById("newProfileName").value.trim();
-        if (!newName) return alert("Enter valid name!");
+        if (!newName) return alert("নাম লিখুন!");
 
         db.ref("users/" + currentUserPhone).update({ name: newName }).then(() => {
-            alert("Name updated!");
+            alert("নাম আপডেট করা হয়েছে!");
             document.getElementById("modalUserName").innerText = newName;
             document.getElementById("editNameBox").style.display = "none";
         });
@@ -970,9 +967,9 @@
     }
 
     function startDirectChatFromProfile() {
-        const name = document.getElementById("modalUserName", viewingProfilePhone);
+        const name = document.getElementById("modalUserName").innerText;
         closeProfileModal();
-        openChat(viewingProfilePhone, document.getElementById("modalUserName").innerText);
+        openChat(viewingProfilePhone, name);
     }
 </script>
 
