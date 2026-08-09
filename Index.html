@@ -2,122 +2,92 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Global Messenger</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase core & Storage SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+
     <style>
         :root { 
             --primary: #007bff; 
-            /* দুটি কালারের সংমিশ্রণে প্রিমিয়াম গ্রেডিয়েন্ট ব্যাকগ্রাউন্ড */
             --bg-gradient: linear-gradient(135deg, #0f2027, #203a43, #2c5364); 
-            --card: rgba(30, 30, 30, 0.85); 
+            --card: rgba(30, 30, 30, 0.95); 
             --text: #e0e0e0; 
         }
         
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background: var(--bg-gradient); color: var(--text); display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         
-        body { 
-            background: var(--bg-gradient); 
-            color: var(--text); 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh; 
-        }
+        .card { background: var(--card); backdrop-filter: blur(10px); width: 100%; max-width: 450px; height: 100%; display: flex; flex-direction: column; position: relative; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); }
+        .auth-screen { display: flex; flex-direction: column; justify-content: center; padding: 25px; height: 100%; overflow-y: auto; }
         
-        .card { 
-            background: var(--card); 
-            backdrop-filter: blur(10px);
-            width: 100%; 
-            max-width: 400px; 
-            height: 100vh; 
-            display: flex; 
-            flex-direction: column; 
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); 
-            position: relative; 
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+        input, select { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2); padding: 14px; color: white; border-radius: 12px; margin-bottom: 12px; width: 100%; outline: none; font-size: 15px; }
+        input:focus, select:focus { border-color: #38bdf8; }
         
-        .auth-screen { display: flex; flex-direction: column; justify-content: center; padding: 30px; height: 100%; overflow-y: auto; }
-        
-        input { 
-            background: rgba(255, 255, 255, 0.07); 
-            border: 1px solid rgba(255, 255, 255, 0.2); 
-            padding: 14px; 
-            color: white; 
-            border-radius: 8px; 
-            margin-bottom: 12px; 
-            width: 100%; 
-            outline: none; 
-            font-size: 14px; 
-        }
-        
-        input:focus { border-color: #38bdf8; }
-        label { font-size: 12px; color: #aaa; margin-bottom: 4px; display: block; }
-        
-        .btn { 
-            background: linear-gradient(135deg, #007bff, #00d2ff); 
-            color: white; 
-            padding: 15px; 
-            border: none; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            width: 100%; 
-            font-size: 16px; 
-            transition: 0.3s;
-        }
-        
-        .btn:hover { opacity: 0.9; }
+        .date-label { font-size: 12px; color: #aaa; margin-bottom: 5px; display: block; }
+        .date-helper { font-size: 10px; color: #777; margin-bottom: 5px; font-style: italic; }
+
+        .phone-container { display: flex; gap: 10px; }
+        .phone-container select { width: 35%; }
+        .phone-container input { width: 65%; }
+
+        .btn { background: linear-gradient(135deg, #007bff, #00d2ff); color: white; padding: 14px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; font-size: 16px; }
         
         #dashboard, #chatScreen { display: none; flex-direction: column; height: 100%; }
+        .header { background: linear-gradient(135deg, #007bff, #0056b3); padding: 15px; display: flex; justify-content: space-between; align-items: center; color: white; }
+        .contact-item { background: rgba(255, 255, 255, 0.05); padding: 15px; margin-bottom: 8px; border-radius: 12px; cursor: pointer; }
         
-        .header { 
-            background: linear-gradient(135deg, #007bff, #0056b3); 
-            padding: 15px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            color: white; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
+        .msg-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; }
+        .msg { max-width: 80%; padding: 10px 14px; border-radius: 16px; margin-bottom: 10px; word-break: break-word; font-size: 14px; }
+        .sent { background: linear-gradient(135deg, #007bff, #0056b3); align-self: flex-end; border-bottom-right-radius: 2px; }
+        .received { background: rgba(255, 255, 255, 0.15); align-self: flex-start; border-bottom-left-radius: 2px; }
         
-        .contact-item { 
-            background: rgba(255, 255, 255, 0.05); 
-            padding: 15px; 
-            margin-bottom: 8px; 
-            border-radius: 10px; 
-            cursor: pointer; 
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: 0.2s;
-        }
+        .msg img, .msg video { max-width: 100%; border-radius: 8px; margin-top: 5px; }
+        .msg audio { width: 100%; margin-top: 5px; }
         
-        .contact-item:hover { background: rgba(255, 255, 255, 0.1); }
+        .chat-footer { padding: 10px; display: flex; gap: 6px; background: #1a1a1a; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); }
+        .attach-btn { background: rgba(255,255,255,0.1); border: none; color: #38bdf8; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; flex-shrink: 0; }
         
-        .msg { max-width: 80%; padding: 10px 15px; border-radius: 15px; margin-bottom: 10px; word-break: break-word; }
-        .sent { background: linear-gradient(135deg, #007bff, #0056b3); align-self: flex-end; }
-        .received { background: rgba(255, 255, 255, 0.15); align-self: flex-start; }
+        .media-menu { display: none; position: absolute; bottom: 70px; left: 10px; background: #222; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 10px; gap: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 10; }
+        .media-menu i { font-size: 20px; color: #38bdf8; cursor: pointer; }
+
+        /* প্রগ্রেস বার ডিজাইন */
+        .progress-box { display: none; padding: 8px 15px; background: rgba(0,0,0,0.8); color: #38bdf8; font-size: 12px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .progress-bar { width: 100%; height: 6px; background: #333; border-radius: 3px; margin-top: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background: #38bdf8; width: 0%; transition: width 0.2s; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <!-- Auth Section -->
+    <!-- Auth Screen -->
     <div id="auth" class="auth-screen">
         <h2 id="authTitle" style="text-align: center; color: #38bdf8; margin-bottom: 20px;">Sign Up</h2>
         
         <div id="regInputs">
             <input type="text" id="fname" placeholder="First Name">
             <input type="text" id="lname" placeholder="Last Name">
-            <label for="dob">Date of Birth:</label>
+            <label class="date-label">Date of Birth</label>
+            <div class="date-helper">Format: DD / MM / YYYY</div>
             <input type="date" id="dob">
         </div>
+
+        <div class="phone-container" id="phoneContainer">
+            <select id="countryCode">
+                <option value="+880">🇧🇩 BD (+880)</option>
+                <option value="+91">🇮🇳 IN (+91)</option>
+                <option value="+92">🇵🇰 PK (+92)</option>
+                <option value="+1">🇺🇸 US (+1)</option>
+                <option value="+44">🇬🇧 UK (+44)</option>
+            </select>
+            <input type="tel" id="phoneInput" placeholder="Phone Number">
+        </div>
         
-        <input type="tel" id="phoneInput" placeholder="Phone Number (e.g. 88017...)">
         <input type="password" id="passInput" placeholder="Password">
-        
         <div id="confirmPassBox">
             <input type="password" id="confirmPassInput" placeholder="Confirm Password">
         </div>
@@ -132,34 +102,62 @@
     <div id="dashboard">
         <div class="header">
             <span>Global Messenger</span>
-            <button onclick="logout()" style="background:none; border:none; color:white; font-size: 18px; cursor:pointer;"><i class="fas fa-sign-out-alt"></i></button>
+            <button onclick="logout()" style="background:none; border:none; color:white; cursor:pointer;"><i class="fas fa-sign-out-alt"></i></button>
         </div>
-        <div style="padding: 10px;">
+        <div style="padding: 12px;">
             <input type="tel" id="targetPhone" placeholder="Friend's Number">
             <button class="btn" onclick="addContact()">Start Chat</button>
         </div>
-        <div style="flex:1; overflow-y:auto; padding: 10px;" id="inboxList"></div>
+        <div style="flex:1; overflow-y:auto; padding: 12px;" id="inboxList"></div>
     </div>
 
     <!-- Chat Screen -->
     <div id="chatScreen">
         <div class="header">
-            <button onclick="closeChat()" style="background:none; border:none; color:white; font-size: 18px; cursor:pointer;"><i class="fas fa-arrow-left"></i></button>
+            <button onclick="closeChat()" style="background:none; border:none; color:white;"><i class="fas fa-arrow-left"></i></button>
             <span id="chatTitle">User</span>
-            <span></span>
+            <div>
+                <i class="fas fa-phone-alt" style="margin-right:15px; cursor:pointer;"></i>
+                <i class="fas fa-video" style="cursor:pointer;"></i>
+            </div>
         </div>
-        <div style="flex:1; overflow-y:auto; padding: 15px;" id="msgArea"></div>
-        <div style="padding: 10px; display:flex; gap:5px;">
+        
+        <div class="msg-area" id="msgArea"></div>
+        
+        <!-- ফাইল প্রগ্রেস বার -->
+        <div class="progress-box" id="progressBox">
+            <span id="progressText">Uploading... 0%</span>
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        </div>
+
+        <!-- হিডেন ফাইল ইনপুট -->
+        <input type="file" id="filePicker" style="display:none;" onchange="uploadFile(this.files[0])">
+
+        <!-- ফাইল সিলেক্ট করার ভাসমান মেনু -->
+        <div class="media-menu" id="mediaMenu">
+            <i class="fas fa-image" title="Image" onclick="triggerFile('image/*')"></i>
+            <i class="fas fa-video" title="Video" onclick="triggerFile('video/*')"></i>
+            <i class="fas fa-music" title="Audio" onclick="triggerFile('audio/*')"></i>
+            <i class="fas fa-file-alt" title="Document" onclick="triggerFile('*/*')"></i>
+            <i class="fas fa-map-marker-alt" title="Location" onclick="sendLocation()"></i>
+        </div>
+
+        <div class="chat-footer">
+            <button class="attach-btn" onclick="toggleMediaMenu()"><i class="fas fa-paperclip"></i></button>
             <input type="text" id="msgInput" placeholder="Message..." style="margin-bottom:0;">
-            <button class="btn" style="width: auto;" onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
+            <button class="btn" style="width: auto; padding: 12px 16px;" onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 </div>
 
 <script>
-    const firebaseConfig = { databaseURL: "https://global-messenger-a8719-default-rtdb.firebaseio.com/" };
+    const firebaseConfig = { 
+        databaseURL: "https://global-messenger-a8719-default-rtdb.firebaseio.com/",
+        storageBucket: "global-messenger-a8719.appspot.com"
+    };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    const storage = firebase.storage();
 
     let isLoginMode = false;
     
@@ -167,53 +165,34 @@
         isLoginMode = !isLoginMode;
         document.getElementById("authTitle").innerText = isLoginMode ? "Login" : "Sign Up";
         document.getElementById("mainBtn").innerText = isLoginMode ? "Login" : "Sign Up";
-        
         document.getElementById("regInputs").style.display = isLoginMode ? "none" : "block";
         document.getElementById("confirmPassBox").style.display = isLoginMode ? "none" : "block";
-        
-        document.getElementById("toggleText").innerText = isLoginMode ? "Don't have an account?" : "Already have an account?";
-        document.getElementById("toggleBtn").innerText = isLoginMode ? "Sign Up" : "Login";
     }
 
     function handleAuth() {
-        const fname = document.getElementById("fname").value.trim();
-        const lname = document.getElementById("lname").value.trim();
-        const dob = document.getElementById("dob").value;
-        const phone = document.getElementById("phoneInput").value.replace(/[^0-9]/g, '');
-        const pass = document.getElementById("passInput").value.trim();
-        const confirmPass = document.getElementById("confirmPassInput").value.trim();
+        const phoneRaw = document.getElementById("phoneInput").value.replace(/[^0-9]/g, '');
+        const countryCode = document.getElementById("countryCode").value;
+        const fullPhone = countryCode + phoneRaw; 
+
+        const fname = document.getElementById("fname").value;
+        const pass = document.getElementById("passInput").value;
+        const confirmPass = document.getElementById("confirmPassInput").value;
 
         if (isLoginMode) {
-            if (!phone || !pass) return alert("Please enter both Phone Number and Password!");
-
-            db.ref("users/" + phone).once("value", snap => {
+            db.ref("users/" + fullPhone).once("value", snap => {
                 if (snap.exists() && snap.val().pass === pass) {
-                    saveSession(phone);
+                    saveSession(fullPhone);
                 } else {
                     alert("Invalid phone or password!");
                 }
             });
         } else {
-            if (!phone || !pass || !confirmPass || !fname || !lname || !dob) {
-                return alert("Please fill all required fields!");
-            }
-
-            if (pass !== confirmPass) {
-                return alert("Passwords do not match! Please check again.");
-            }
-
-            db.ref("users/" + phone).once("value", snap => {
+            if (pass !== confirmPass) return alert("Passwords do not match!");
+            db.ref("users/" + fullPhone).once("value", snap => {
                 if (snap.exists()) {
-                    alert("Account already exists with this number! Please Login.");
+                    alert("Account already exists!");
                 } else {
-                    db.ref("users/" + phone).set({ 
-                        firstName: fname, 
-                        lastName: lname, 
-                        dob: dob,
-                        pass: pass 
-                    }).then(() => {
-                        saveSession(phone);
-                    });
+                    db.ref("users/" + fullPhone).set({ firstName: fname, pass: pass }).then(() => saveSession(fullPhone));
                 }
             });
         }
@@ -222,50 +201,152 @@
     function saveSession(phone) { localStorage.setItem("gm_user", phone); showDashboard(); }
     function showDashboard() { document.getElementById("auth").style.display = "none"; document.getElementById("dashboard").style.display = "flex"; loadContacts(); }
     
-    function loadContacts() {
-        const user = localStorage.getItem("gm_user");
-        db.ref("inbox/" + user).on("value", snap => {
-            const list = document.getElementById("inboxList"); list.innerHTML = "";
-            snap.forEach(child => {
-                const div = document.createElement("div"); div.className = "contact-item"; div.innerText = "+" + child.key;
-                div.onclick = () => openChat(child.key); list.appendChild(div);
-            });
-        });
+    function loadContacts() { 
+        const user = localStorage.getItem("gm_user"); 
+        db.ref("inbox/" + user).on("value", snap => { 
+            const list = document.getElementById("inboxList"); list.innerHTML = ""; 
+            snap.forEach(child => { 
+                const div = document.createElement("div"); div.className = "contact-item"; div.innerText = child.key; 
+                div.onclick = () => openChat(child.key); list.appendChild(div); 
+            }); 
+        }); 
     }
 
-    function addContact() {
-        const user = localStorage.getItem("gm_user");
-        const target = document.getElementById("targetPhone").value.replace(/[^0-9]/g, '');
-        if(!target) return alert("Enter friend's number!");
-        db.ref("inbox/" + user + "/" + target).set(true);
-        db.ref("inbox/" + target + "/" + user).set(true);
-        openChat(target);
+    function addContact() { 
+        const user = localStorage.getItem("gm_user"); 
+        const target = document.getElementById("targetPhone").value; 
+        if(!target) return alert("Enter number!"); 
+        db.ref("inbox/" + user + "/" + target).set(true); 
+        db.ref("inbox/" + target + "/" + user).set(true); 
+        openChat(target); 
     }
 
-    function openChat(target) {
-        const user = localStorage.getItem("gm_user");
-        document.getElementById("dashboard").style.display = "none";
-        document.getElementById("chatScreen").style.display = "flex";
-        document.getElementById("chatTitle").innerText = "+" + target;
-        const roomId = [user, target].sort().join("_");
+    function openChat(target) { 
+        const user = localStorage.getItem("gm_user"); 
+        document.getElementById("dashboard").style.display = "none"; 
+        document.getElementById("chatScreen").style.display = "flex"; 
+        document.getElementById("chatTitle").innerText = target; 
+        document.getElementById("msgArea").innerHTML = "";
+
+        const roomId = [user, target].sort().join("_"); 
         db.ref("chats/" + roomId).off();
-        db.ref("chats/" + roomId).on("child_added", snap => {
-            const data = snap.val();
-            const div = document.createElement("div"); div.className = "msg " + (data.from == user ? "sent" : "received");
-            div.innerText = data.text;
-            const area = document.getElementById("msgArea"); area.appendChild(div); area.scrollTop = area.scrollHeight;
-        });
+        db.ref("chats/" + roomId).on("child_added", snap => { 
+            const data = snap.val(); 
+            renderMessage(data, user);
+        }); 
     }
 
-    function sendMsg() {
-        const user = localStorage.getItem("gm_user");
-        const text = document.getElementById("msgInput").value;
-        const target = document.getElementById("chatTitle").innerText.replace("+", "");
-        if(!text) return;
-        db.ref("chats/" + [user, target].sort().join("_")).push({ from: user, text: text });
-        document.getElementById("msgInput").value = "";
+    function renderMessage(data, user) {
+        const div = document.createElement("div"); 
+        div.className = "msg " + (data.from == user ? "sent" : "received");
+        
+        if (data.type === "text") {
+            div.innerText = data.text;
+        } else if (data.type === "image") {
+            div.innerHTML = `<img src="${data.url}" alt="Image">`;
+        } else if (data.type === "video") {
+            div.innerHTML = `<video src="${data.url}" controls></video>`;
+        } else if (data.type === "audio") {
+            div.innerHTML = `<audio src="${data.url}" controls></audio>`;
+        } else if (data.type === "file") {
+            div.innerHTML = `<a href="${data.url}" target="_blank" download="${data.fileName}" style="color:#38bdf8;"><i class="fas fa-file-download"></i> ${data.fileName}</a>`;
+        } else if (data.type === "location") {
+            div.innerHTML = `<a href="${data.url}" target="_blank" style="color:#38bdf8;"><i class="fas fa-map-marked-alt"></i> View Shared Location</a>`;
+        }
+
+        const area = document.getElementById("msgArea");
+        area.appendChild(div);
+        area.scrollTop = area.scrollHeight;
     }
-    
+
+    function sendMsg() { 
+        const text = document.getElementById("msgInput").value; 
+        if(!text) return;
+        pushToFirebase({ type: "text", text: text });
+        document.getElementById("msgInput").value = ""; 
+    }
+
+    function pushToFirebase(payload) {
+        const user = localStorage.getItem("gm_user"); 
+        const target = document.getElementById("chatTitle").innerText; 
+        payload.from = user;
+        db.ref("chats/" + [user, target].sort().join("_")).push(payload);
+        document.getElementById("mediaMenu").style.display = "none";
+    }
+
+    function toggleMediaMenu() {
+        const menu = document.getElementById("mediaMenu");
+        menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+    }
+
+    function triggerFile(acceptType) {
+        const picker = document.getElementById("filePicker");
+        picker.accept = acceptType;
+        picker.click();
+    }
+
+    /* ৫০ এমবি ফিক্সড ফাইল আপলোড লজিক (Firebase Storage সহ) */
+    function uploadFile(file) {
+        if (!file) return;
+        
+        // ফাইল সাইজ লিমিট (30 MB)
+        if (file.size > 30 * 1024 * 1024) { 
+            return alert("ফাইল সাইজ ৩০ এমবি-র বেশি! অনুগ্রহ করে ৩০ এমবি-র মধ্যে ফাইল সিলেক্ট করুন।");
+        }
+
+        const pBox = document.getElementById("progressBox");
+        const pFill = document.getElementById("progressFill");
+        const pText = document.getElementById("progressText");
+        
+        pBox.style.display = "block";
+        document.getElementById("mediaMenu").style.display = "none";
+
+        // ফায়ারবেস স্টোরেজে আপলোড প্রসেস
+        const fileRef = storage.ref('chat_files/' + Date.now() + '_' + file.name);
+        const task = fileRef.put(file);
+
+        task.on('state_changed', 
+            (snapshot) => {
+                const percentage = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                pFill.style.width = percentage + "%";
+                pText.innerText = "Uploading... " + percentage + "%";
+            }, 
+            (err) => {
+                alert("ফাইল আপলোড ব্যর্থ হয়েছে: " + err.message);
+                pBox.style.display = "none";
+            }, 
+            () => {
+                task.snapshot.ref.getDownloadURL().then((downloadUrl) => {
+                    let fileType = "file";
+                    if (file.type.startsWith("image/")) fileType = "image";
+                    else if (file.type.startsWith("video/")) fileType = "video";
+                    else if (file.type.startsWith("audio/")) fileType = "audio";
+
+                    pushToFirebase({ 
+                        type: fileType, 
+                        url: downloadUrl,
+                        fileName: file.name
+                    });
+
+                    pBox.style.display = "none";
+                    pFill.style.width = "0%";
+                    document.getElementById("filePicker").value = "";
+                });
+            }
+        );
+    }
+
+    function sendLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(position => {
+                const mapUrl = `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}`;
+                pushToFirebase({ type: "location", url: mapUrl });
+            }, () => alert("Location permission denied."));
+        } else {
+            alert("Geolocation not supported.");
+        }
+    }
+
     function logout() { localStorage.removeItem("gm_user"); location.reload(); }
     function closeChat() { document.getElementById("chatScreen").style.display = "none"; document.getElementById("dashboard").style.display = "flex"; }
     window.onload = () => { if(localStorage.getItem("gm_user")) showDashboard(); };
