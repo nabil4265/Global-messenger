@@ -42,7 +42,6 @@
         .btn-secondary { background: rgba(255,255,255,0.1); color: #ccc; }
         
         #dashboard { display: none; flex-direction: column; height: 100%; }
-        
         #chatScreen { display: none; flex-direction: column; height: 100vh; height: -webkit-fill-available; overflow: hidden; }
         
         .header { background: linear-gradient(135deg, #007bff, #0056b3); padding: 15px; display: flex; justify-content: space-between; align-items: center; color: white; flex-shrink: 0; }
@@ -59,7 +58,6 @@
         .nav-tab.active { color: #38bdf8; border-bottom: 3px solid #38bdf8; background: rgba(255,255,255,0.05); }
 
         .list-container { flex: 1; overflow-y: auto; padding: 12px; }
-
         .contact-item { background: rgba(255, 255, 255, 0.05); padding: 12px; margin-bottom: 8px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
         .contact-info { display: flex; align-items: center; gap: 12px; }
         .contact-item i.avatar { color: #38bdf8; font-size: 26px; }
@@ -72,7 +70,6 @@
         .sent { background: linear-gradient(135deg, #007bff, #0056b3); align-self: flex-end; border-bottom-right-radius: 2px; }
         .received { background: rgba(255, 255, 255, 0.15); align-self: flex-start; border-bottom-left-radius: 2px; }
         
-        /* নেভিগেশন বার বা নিচের অংশ থেকে ২ সেমি উপরে টেক্সট বার রাখার জন্য মার্জিন ও প্যাডিং সেটআপ */
         .chat-footer { padding: 10px 10px 25px 10px; margin-bottom: 25px; display: flex; gap: 8px; background: #1a1a1a; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; }
         .attach-btn { background: none; border: none; color: #aaa; font-size: 20px; cursor: pointer; padding: 5px; }
         .attach-btn:hover { color: #38bdf8; }
@@ -307,14 +304,17 @@
         </div>
     </div>
 
-    <!-- Active Call Screen -->
+    <!-- Active Call Screen & Incoming Call Notification Modal -->
     <div id="callOverlay">
         <h3 id="callStatus" style="color:#fff;">Calling...</h3>
         <div class="video-container">
             <video id="remoteVideo" autoplay playsinline></video>
             <video id="localVideo" autoplay playsinline muted></video>
         </div>
-        <button class="btn" onclick="endCall()" style="background:#dc3545; max-width:150px;"><i class="fas fa-phone-slash"></i> End Call</button>
+        <div style="display: flex; gap: 10px; width: 100%; justify-content: center;">
+            <button id="acceptCallBtn" class="btn" onclick="acceptIncomingCall()" style="background:#28a745; max-width:150px; display:none;"><i class="fas fa-phone"></i> Accept</button>
+            <button class="btn" onclick="endCall()" style="background:#dc3545; max-width:150px;"><i class="fas fa-phone-slash"></i> End Call</button>
+        </div>
     </div>
 </div>
 
@@ -409,6 +409,7 @@
     let currentSelfIsPublic = false;
     let localStream = null;
     let verifiedResetPhone = "";
+    let incomingCallData = null;
 
     function initCountryCodes() {
         const selects = document.querySelectorAll(".country-select");
@@ -513,7 +514,6 @@
     function saveMigratedSecurity() {
         const q = document.getElementById("migrateSecQuestion").value;
         const a = document.getElementById("migrateSecAnswer").value.trim().toLowerCase();
-        
         if (!a) return alert("Please enter an answer!");
 
         db.ref("users/" + currentUserPhone).update({
@@ -608,6 +608,7 @@
         });
 
         loadFriendsList();
+        listenForIncomingCalls();
     }
 
     function logout() {
@@ -680,7 +681,6 @@
         document.getElementById("chatTitle").innerText = targetName;
         document.getElementById("dashboard").style.display = "none";
         document.getElementById("chatScreen").style.display = "flex";
-        
         loadMessages();
     }
 
@@ -701,12 +701,16 @@
         }, 300);
     }
 
+    // কলিং এবং ফায়ারবেস সিগন্যালিং সিস্টেম
     async function startCall(type) {
         if (!activeChatTarget) return;
         const callOverlay = document.getElementById("callOverlay");
         const callStatus = document.getElementById("callStatus");
+        const acceptBtn = document.getElementById("acceptCallBtn");
+        
+        acceptBtn.style.display = "none";
         callOverlay.style.display = "flex";
-        callStatus.innerText = `Requesting ${type.toUpperCase()} call permission...`;
+        callStatus.innerText = `Calling ${activeChatTarget}...`;
 
         try {
             const constraints = { 
@@ -714,15 +718,71 @@
                 video: type === 'video' ? { width: 1280, height: 720 } : false 
             };
             
-            // ব্রাউজার স্বয়ংক্রিয়ভাবে ক্যামেরা ও মাইক্রোফোন পারমিশন পপআপ দেখাবে এবং এলাউ করলে পারমিশন চালু হবে
+            // ব্রাউজার থেকে ক্যামেরা এবং মাইক্রোফোনের পারমিশন চাওয়া হচ্ছে
             localStream = await navigator.mediaDevices.getUserMedia(constraints);
             const localVideo = document.getElementById("localVideo");
             localVideo.srcObject = localStream;
             localVideo.style.display = type === 'video' ? 'block' : 'none';
             
-            callStatus.innerText = `${type.toUpperCase()} Call Active`;
+            // ফায়ারবেসে সিগন্যাল পাঠানো হচ্ছে যেন অপর প্রান্তের ইউজারের কাছে কল রিং হয়
+            db.ref("calls/" + activeChatTarget).set({
+                caller: currentUserPhone,
+                type: type,
+                status: "ringing",
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+
+            callStatus.innerText = `${type.toUpperCase()} Call Ringing...`;
         } catch (err) {
-            alert("ক্যামেরা বা মাইক্রোফোনের পারমিশন দেওয়া হয়নি অথবা ব্রাউজার ব্লক করে রেখেছে! দয়া করে ব্রাউজার সেটিংস বা পারমিশন অপশন থেকে এলাউ করুন।");
+            alert("ক্যামেরা বা মাইক্রোফোনের পারমিশন পাওয়া যায়নি! ব্রাউজার সেটিংস থেকে পারমিশন এলাউ করুন।");
+            endCall();
+        }
+    }
+
+    function listenForIncomingCalls() {
+        db.ref("calls/" + currentUserPhone).on("value", snap => {
+            if (snap.exists()) {
+                const data = snap.val();
+                if (data.status === "ringing" && data.caller !== currentUserPhone) {
+                    incomingCallData = data;
+                    const callOverlay = document.getElementById("callOverlay");
+                    const callStatus = document.getElementById("callStatus");
+                    const acceptBtn = document.getElementById("acceptCallBtn");
+                    
+                    callOverlay.style.display = "flex";
+                    callStatus.innerText = `Incoming ${data.type.toUpperCase()} Call from ${data.caller}`;
+                    acceptBtn.style.display = "block";
+                } else if (data.status === "ended") {
+                    endCall();
+                }
+            }
+        });
+    }
+
+    async function acceptIncomingCall() {
+        if (!incomingCallData) return;
+        const callStatus = document.getElementById("callStatus");
+        const acceptBtn = document.getElementById("acceptCallBtn");
+        acceptBtn.style.display = "none";
+
+        try {
+            const constraints = { 
+                audio: true, 
+                video: incomingCallData.type === 'video' ? { width: 1280, height: 720 } : false 
+            };
+            
+            localStream = await navigator.mediaDevices.getUserMedia(constraints);
+            const localVideo = document.getElementById("localVideo");
+            localVideo.srcObject = localStream;
+            localVideo.style.display = incomingCallData.type === 'video' ? 'block' : 'none';
+
+            callStatus.innerText = "Call Connected";
+
+            db.ref("calls/" + currentUserPhone).update({
+                status: "connected"
+            });
+        } catch (err) {
+            alert("ক্যামেরা বা মাইক্রোফোন পারমিশন দেওয়া হয়নি!");
             endCall();
         }
     }
@@ -735,6 +795,15 @@
         document.getElementById("localVideo").srcObject = null;
         document.getElementById("remoteVideo").srcObject = null;
         document.getElementById("callOverlay").style.display = "none";
+        document.getElementById("acceptCallBtn").style.display = "none";
+        
+        if (currentUserPhone) {
+            db.ref("calls/" + currentUserPhone).remove();
+        }
+        if (activeChatTarget) {
+            db.ref("calls/" + activeChatTarget).update({ status: "ended" });
+        }
+        incomingCallData = null;
     }
 
     function sendMsg() {
@@ -804,8 +873,6 @@
                 fileName: file.name,
                 type: fileType,
                 timestamp: firebase.database.ServerValue.TIMESTAMP
-            }).catch(err => {
-                alert("Error sending file: Database limit exceeded.");
             });
         };
         reader.readAsDataURL(file);
@@ -835,7 +902,7 @@
                         msgDiv.innerText = data.msg;
                     }
 
-                    area.appendChild(msgDiv);
+                    area.appendChild(msgDstDiv = msgDiv);
                 });
                 scrollToBottom();
             }
@@ -882,7 +949,6 @@
     }
 
     function closeProfileModal() { document.getElementById("profileModal").style.display = "none"; }
-
     function showEditNameBox() { document.getElementById("editNameBox").style.display = "block"; }
 
     function saveNewName() {
@@ -904,9 +970,9 @@
     }
 
     function startDirectChatFromProfile() {
-        const name = document.getElementById("modalUserName").innerText;
+        const name = document.getElementById("modalUserName", viewingProfilePhone);
         closeProfileModal();
-        openChat(viewingProfilePhone, name);
+        openChat(viewingProfilePhone, document.getElementById("modalUserName").innerText);
     }
 </script>
 
