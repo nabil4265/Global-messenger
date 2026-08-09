@@ -9,7 +9,6 @@
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
     <style>
         :root { 
@@ -32,17 +31,16 @@
         .password-container { position: relative; width: 100%; }
         .password-container input { padding-right: 45px; }
         .toggle-password { position: absolute; right: 15px; top: 15px; color: #aaa; cursor: pointer; font-size: 16px; z-index: 5; }
-        .toggle-password:hover { color: #38bdf8; }
 
         .date-label { font-size: 12px; color: #aaa; margin-bottom: 4px; display: block; }
-
         .phone-container { display: flex; gap: 10px; }
         .phone-container select { width: 40%; }
         .phone-container input { width: 60%; }
 
         .btn { background: linear-gradient(135deg, #007bff, #00d2ff); color: white; padding: 12px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; font-size: 15px; }
+        .btn-secondary { background: rgba(255,255,255,0.1); color: #ccc; }
         
-        #dashboard, #chatScreen, #callScreen { display: none; flex-direction: column; height: 100%; }
+        #dashboard, #chatScreen { display: none; flex-direction: column; height: 100%; }
         
         .header { background: linear-gradient(135deg, #007bff, #0056b3); padding: 15px; display: flex; justify-content: space-between; align-items: center; color: white; }
         .user-profile-badge { display: flex; align-items: center; gap: 10px; cursor: pointer; }
@@ -63,20 +61,16 @@
         
         .msg-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; }
         .msg { max-width: 80%; padding: 10px 14px; border-radius: 16px; margin-bottom: 10px; word-break: break-word; font-size: 14px; }
-        .sender-name { font-size: 10px; color: #38bdf8; margin-bottom: 3px; font-weight: bold; }
         .sent { background: linear-gradient(135deg, #007bff, #0056b3); align-self: flex-end; border-bottom-right-radius: 2px; }
         .received { background: rgba(255, 255, 255, 0.15); align-self: flex-start; border-bottom-left-radius: 2px; }
         
         .chat-footer { padding: 10px; display: flex; gap: 6px; background: #1a1a1a; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); }
-        .attach-btn { background: rgba(255,255,255,0.1); border: none; color: #38bdf8; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; flex-shrink: 0; }
         
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 100; justify-content: center; align-items: center; }
         .modal-content { background: #1e1e1e; padding: 20px; border-radius: 16px; width: 85%; max-width: 380px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
         .profile-icon-lg { font-size: 55px; color: #38bdf8; margin-bottom: 10px; }
         .profile-info-box { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin: 8px 0; text-align: left; font-size: 13px; }
-        .privacy-tag { font-size: 11px; padding: 3px 6px; border-radius: 4px; display: inline-block; margin-top: 4px; }
-        .privacy-private { background: rgba(255, 59, 48, 0.2); color: #ff453a; }
-        .privacy-public { background: rgba(52, 199, 89, 0.2); color: #30d158; }
+        .edit-name-box { display: none; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -92,7 +86,7 @@
             <label class="date-label">Date of Birth</label>
             <input type="date" id="dob">
             
-            <label class="date-label">Security Question (Password Recovery-এর জন্য)</label>
+            <label class="date-label">Security Question</label>
             <select id="secQuestion">
                 <option value="school">What was your first school name?</option>
                 <option value="pet">What is your favorite pet's name?</option>
@@ -134,7 +128,7 @@
         </p>
     </div>
 
-    <!-- Forgot Password Modal (নিরাপদ ভেরিফিকেশন সহ) -->
+    <!-- Forgot Password Modal -->
     <div class="modal" id="forgotModal">
         <div class="modal-content">
             <i class="fas fa-shield-alt profile-icon-lg"></i>
@@ -164,7 +158,7 @@
             </div>
 
             <button class="btn" onclick="handleResetPassword()" style="margin-top:10px;">Reset Password</button>
-            <button class="btn" onclick="closeForgotModal()" style="margin-top:8px; background: rgba(255,255,255,0.1); color:#ccc;">Cancel</button>
+            <button class="btn btn-secondary" onclick="closeForgotModal()" style="margin-top:8px;">Cancel</button>
         </div>
     </div>
 
@@ -227,34 +221,39 @@
         </div>
     </div>
 
-    <!-- Profile View Modal (নিজের এবং বন্ধুদের জন্য) -->
+    <!-- Profile View Modal (নাম এডিট অপশনসহ) -->
     <div class="modal" id="profileModal">
         <div class="modal-content">
             <i class="fas fa-user-circle profile-icon-lg"></i>
-            <h3 id="modalUserName" style="color:#fff;">Loading...</h3>
+            <h3 id="modalUserName" style="color:#fff;">User</h3>
             
             <div class="profile-info-box">
                 <span style="color:#aaa; font-size:11px; display:block;">PHONE NUMBER:</span>
                 <strong id="modalUserPhone" style="color:#38bdf8; font-size:14px;">...</strong>
             </div>
 
-            <!-- পাবলিক/প্রাইভেট ডাটা সেকশন -->
             <div class="profile-info-box" id="modalExtraDataBox">
-                <span style="color:#aaa; font-size:11px; display:block;">ADDITIONAL DATA:</span>
+                <span style="color:#aaa; font-size:11px; display:block;">STATUS:</span>
                 <div id="modalExtraContent" style="color:#ddd; margin-top:4px;">Private</div>
             </div>
 
-            <!-- ইউজার নিজের প্রোফাইল দেখলে পাবলিশ/হাইড টগল বাটন পাবে -->
-            <div id="selfPrivacyControls" style="display:none; margin-top:10px;">
-                <label style="font-size:12px; color:#aaa;">Public Data Visibility:</label>
-                <button class="btn" id="privacyToggleBtn" onclick="toggleDataPrivacy()" style="background:#333; margin-top:5px; font-size:12px;">Toggle Visibility</button>
+            <!-- নিজের নামের এডিট সেকশন -->
+            <div id="selfProfileControls" style="display:none; margin-top:10px;">
+                <button class="btn" onclick="showEditNameBox()" style="background:#007bff; margin-bottom:8px; font-size:13px;"><i class="fas fa-edit"></i> Edit Name</button>
+                
+                <div id="editNameBox" class="edit-name-box">
+                    <input type="text" id="newProfileName" placeholder="Enter New Name">
+                    <button class="btn" onclick="saveNewName()" style="background:#28a745; margin-bottom:5px;">Save Name</button>
+                </div>
+
+                <button class="btn" id="privacyToggleBtn" onclick="toggleDataPrivacy()" style="background:#333; font-size:12px;">Toggle Visibility</button>
             </div>
 
             <div id="friendChatAction" style="display:none; margin-top:10px;">
                 <button class="btn" onclick="startDirectChatFromProfile()">Start Chat</button>
             </div>
 
-            <button class="btn" onclick="closeProfileModal()" style="margin-top:10px; background: rgba(255,255,255,0.1); color:#ccc;">Close</button>
+            <button class="btn btn-secondary" onclick="closeProfileModal()" style="margin-top:10px;">Close</button>
         </div>
     </div>
 </div>
@@ -320,12 +319,11 @@
             const pass = document.getElementById("passInput").value;
             const confirmPass = document.getElementById("confirmPassInput").value;
 
-            if(!fname || !lname) return alert("Please enter full name!");
+            const fullName = (fname + " " + lname).trim() || "Messenger User";
+
             if (!dob) return alert("Please select Date of Birth!");
             if (!secAnswer) return alert("Please answer security question!");
             if (pass !== confirmPass) return alert("Passwords do not match!");
-
-            const fullName = fname + " " + lname;
 
             db.ref("users/" + fullPhone).once("value", snap => {
                 if (snap.exists()) {
@@ -369,7 +367,7 @@
                         closeForgotModal();
                     });
                 } else {
-                    alert("Verification details (DOB or Security Answer) failed!");
+                    alert("Verification details failed!");
                 }
             } else {
                 alert("Phone number not registered!");
@@ -392,18 +390,40 @@
         loadGroups(); 
     }
 
-    /* নিজের প্রোফাইল নেম ড্যাশবোর্ডে লোড করা */
+    /* রিয়েল-টাইমে নিজের নাম লোড করা */
     function loadUserProfile() {
         db.ref("users/" + currentUserPhone).on("value", snap => {
             if(snap.exists()) {
                 const uData = snap.val();
-                document.getElementById("displayUserName").innerText = uData.name || currentUserPhone;
+                const displayName = (uData.name && uData.name.trim() !== "") ? uData.name : "Messenger User";
+                document.getElementById("displayUserName").innerText = displayName;
                 currentSelfIsPublic = uData.isPublic || false;
+            } else {
+                /* যদি ডেটাবেজে ইউজারের এন্ট্রি আগে না থাকে */
+                document.getElementById("displayUserName").innerText = "Messenger User";
             }
         });
     }
 
-    /* ফ্রেন্ডলিস্ট তৈরি ও ফ্রেন্ডের আসল নাম ডাটাবেজ থেকে লোড করা */
+    /* নাম এডিট ও সেভ করার ফাংশন */
+    function showEditNameBox() {
+        const box = document.getElementById("editNameBox");
+        box.style.display = box.style.display === "block" ? "none" : "block";
+    }
+
+    function saveNewName() {
+        const newName = document.getElementById("newProfileName").value.trim();
+        if(!newName) return alert("Please enter a valid name!");
+
+        db.ref("users/" + currentUserPhone + "/name").set(newName).then(() => {
+            alert("Profile Name updated successfully!");
+            document.getElementById("editNameBox").style.display = "none";
+            document.getElementById("newProfileName").value = "";
+            openProfileModal(currentUserPhone, true);
+        });
+    }
+
+    /* ফ্রেন্ড লিস্ট থেকে সঠিক নাম লোড করা */
     function loadContacts() { 
         db.ref("inbox/" + currentUserPhone).on("value", snap => { 
             const list = document.getElementById("inboxList"); 
@@ -416,7 +436,10 @@
                 div.className = "contact-item"; 
                 
                 db.ref("users/" + friendPhone).once("value", uSnap => {
-                    const friendName = (uSnap.exists() && uSnap.val().name) ? uSnap.val().name : friendPhone;
+                    let friendName = "Messenger User";
+                    if(uSnap.exists() && uSnap.val().name && uSnap.val().name.trim() !== "") {
+                        friendName = uSnap.val().name;
+                    }
                     div.innerHTML = `
                         <div class="contact-info">
                             <i class="fas fa-user-circle avatar"></i> 
@@ -428,7 +451,6 @@
                         <i class="fas fa-chevron-right" style="font-size:14px; color:#555;"></i>`;
                 });
 
-                /* ক্লিক করলে সরাসরি চ্যাটের বদলে তার প্রোফাইল অন হবে */
                 div.onclick = () => openProfileModal(friendPhone, false); 
                 list.appendChild(div); 
             }); 
@@ -436,12 +458,13 @@
         }); 
     }
 
-    /* প্রোফাইল পপ-আপ (নিজের ও বন্ধুদের জন্য আলাদা ভিউ) */
+    /* প্রোফাইল পপ-আপ খোলা */
     function openProfileModal(targetPhone, isSelf = false) {
         viewingProfilePhone = targetPhone;
         document.getElementById("profileModal").style.display = "flex";
+        document.getElementById("editNameBox").style.display = "none";
         
-        const selfControls = document.getElementById("selfPrivacyControls");
+        const selfControls = document.getElementById("selfProfileControls");
         const friendAction = document.getElementById("friendChatAction");
 
         if(isSelf || targetPhone === currentUserPhone) {
@@ -455,29 +478,33 @@
         db.ref("users/" + targetPhone).once("value", snap => {
             if(snap.exists()) {
                 const uData = snap.val();
-                document.getElementById("modalUserName").innerText = uData.name || "User";
+                const userName = (uData.name && uData.name.trim() !== "") ? uData.name : "Messenger User";
+                
+                document.getElementById("modalUserName").innerText = userName;
                 document.getElementById("modalUserPhone").innerText = targetPhone;
 
                 const privacyBtn = document.getElementById("privacyToggleBtn");
                 if (uData.isPublic) {
-                    privacyBtn.innerText = "Public Data: ON (Click to Hide)";
+                    privacyBtn.innerText = "Public Visibility: ON";
                     privacyBtn.style.background = "#28a745";
                 } else {
-                    privacyBtn.innerText = "Public Data: OFF (Click to Show)";
+                    privacyBtn.innerText = "Public Visibility: OFF";
                     privacyBtn.style.background = "#dc3545";
                 }
 
-                /* প্রাইভেসি ফিল্টারিং: অন্য কেউ প্রোফাইল দেখলে শর্তসাপেক্ষে ডাটা দেখাবে */
                 const extraContent = document.getElementById("modalExtraContent");
                 if(isSelf || targetPhone === currentUserPhone) {
-                    extraContent.innerHTML = `<b>Date of Birth:</b> ${uData.dob || 'N/A'} <br><span class="privacy-tag ${uData.isPublic ? 'privacy-public':'privacy-private'}">${uData.isPublic ? 'Publicly Visible' : 'Private'}</span>`;
+                    extraContent.innerHTML = `<b>Date of Birth:</b> ${uData.dob || 'N/A'}`;
                 } else {
                     if(uData.isPublic) {
-                        extraContent.innerHTML = `<span style="color:#30d158;"><i class="fas fa-check-circle"></i> User details are public</span><br>Bio/Status: Member of Global Messenger`;
+                        extraContent.innerHTML = `<span style="color:#30d158;"><i class="fas fa-check-circle"></i> Profile is Public</span>`;
                     } else {
-                        extraContent.innerHTML = `<span style="color:#ff453a;"><i class="fas fa-lock"></i> User details are set to Private</span>`;
+                        extraContent.innerHTML = `<span style="color:#ff453a;"><i class="fas fa-lock"></i> Profile is Private</span>`;
                     }
                 }
+            } else {
+                document.getElementById("modalUserName").innerText = "Messenger User";
+                document.getElementById("modalUserPhone").innerText = targetPhone;
             }
         });
     }
@@ -515,7 +542,8 @@
             document.getElementById("chatTitle").innerText = groupTitle;
         } else {
             db.ref("users/" + target).once("value", uSnap => {
-                document.getElementById("chatTitle").innerText = (uSnap.exists() && uSnap.val().name) ? uSnap.val().name : target;
+                const uName = (uSnap.exists() && uSnap.val().name) ? uSnap.val().name : target;
+                document.getElementById("chatTitle").innerText = uName;
             });
         }
         
