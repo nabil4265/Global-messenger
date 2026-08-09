@@ -19,7 +19,8 @@
         }
         
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-        body { background: var(--bg-gradient); color: var(--text); display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        html, body { height: 100%; width: 100%; overflow: hidden; }
+        body { background: var(--bg-gradient); color: var(--text); display: flex; justify-content: center; align-items: center; }
         
         .card { background: var(--card); backdrop-filter: blur(10px); width: 100%; max-width: 450px; height: 100%; display: flex; flex-direction: column; position: relative; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); }
         .auth-screen { display: flex; flex-direction: column; justify-content: center; padding: 25px; height: 100%; overflow-y: auto; }
@@ -33,16 +34,19 @@
         .toggle-password { position: absolute; right: 15px; top: 15px; color: #aaa; cursor: pointer; font-size: 16px; z-index: 5; }
 
         .date-label { font-size: 12px; color: #aaa; margin-bottom: 4px; display: block; }
-        .phone-container { display: flex; gap: 10px; }
-        .phone-container select { width: 45%; }
-        .phone-container input { width: 55%; }
+        .phone-container { display: flex; gap: 10px; margin-bottom: 10px; }
+        .phone-container select { width: 45%; margin-bottom: 0; }
+        .phone-container input { width: 55%; margin-bottom: 0; }
 
         .btn { background: linear-gradient(135deg, #007bff, #00d2ff); color: white; padding: 12px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; font-size: 15px; }
         .btn-secondary { background: rgba(255,255,255,0.1); color: #ccc; }
         
-        #dashboard, #chatScreen { display: none; flex-direction: column; height: 100%; }
+        #dashboard { display: none; flex-direction: column; height: 100%; }
         
-        .header { background: linear-gradient(135deg, #007bff, #0056b3); padding: 15px; display: flex; justify-content: space-between; align-items: center; color: white; }
+        /* Chat Screen Layout Optimized for Keyboard Push */
+        #chatScreen { display: none; flex-direction: column; height: 100vh; height: -webkit-fill-available; overflow: hidden; }
+        
+        .header { background: linear-gradient(135deg, #007bff, #0056b3); padding: 15px; display: flex; justify-content: space-between; align-items: center; color: white; flex-shrink: 0; }
         .user-profile-badge { display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .user-profile-badge i { font-size: 24px; color: #fff; }
         .user-profile-badge span { font-weight: bold; font-size: 16px; }
@@ -63,13 +67,13 @@
 
         .friend-count-badge { background: rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 8px; font-size: 13px; margin: 10px 12px 0 12px; color: #38bdf8; display: flex; justify-content: space-between; }
         
-        .msg-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; }
+        .msg-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; scroll-behavior: smooth; }
         .msg { max-width: 80%; padding: 10px 14px; border-radius: 16px; margin-bottom: 10px; word-break: break-word; font-size: 14px; }
         .msg img, .msg video { max-width: 100%; border-radius: 8px; margin-top: 5px; }
         .sent { background: linear-gradient(135deg, #007bff, #0056b3); align-self: flex-end; border-bottom-right-radius: 2px; }
         .received { background: rgba(255, 255, 255, 0.15); align-self: flex-start; border-bottom-left-radius: 2px; }
         
-        .chat-footer { padding: 10px; display: flex; gap: 8px; background: #1a1a1a; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); }
+        .chat-footer { padding: 10px; display: flex; gap: 8px; background: #1a1a1a; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; }
         .attach-btn { background: none; border: none; color: #aaa; font-size: 20px; cursor: pointer; padding: 5px; }
         .attach-btn:hover { color: #38bdf8; }
         
@@ -78,6 +82,12 @@
         .profile-icon-lg { font-size: 55px; color: #38bdf8; margin-bottom: 10px; }
         .profile-info-box { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin: 8px 0; text-align: left; font-size: 13px; }
         .edit-name-box { display: none; margin-top: 10px; }
+
+        /* Call Modal Overlay */
+        #callOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111; z-index: 200; flex-direction: column; justify-content: space-between; align-items: center; padding: 30px; }
+        .video-container { position: relative; width: 100%; height: 60%; background: #000; border-radius: 16px; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        #localVideo { position: absolute; top: 10px; right: 10px; width: 90px; height: 120px; border-radius: 8px; border: 2px solid #007bff; }
     </style>
 </head>
 <body>
@@ -87,7 +97,6 @@
     <div id="auth" class="auth-screen">
         <h2 id="authTitle" style="text-align: center; color: #38bdf8; margin-bottom: 15px;">Login</h2>
         
-        <!-- Registration Fields (Hidden by default for Login) -->
         <div id="regInputs" style="display: none;">
             <input type="text" id="fname" placeholder="First Name">
             <input type="text" id="lname" placeholder="Last Name">
@@ -113,7 +122,6 @@
             <i class="fas fa-eye toggle-password" onclick="togglePasswordVisibility('passInput', this)"></i>
         </div>
 
-        <!-- Confirm Password Field (Hidden by default for Login) -->
         <div id="confirmPassBox" class="password-container" style="display: none;">
             <input type="password" id="confirmPassInput" placeholder="Confirm Password">
             <i class="fas fa-eye toggle-password" onclick="togglePasswordVisibility('confirmPassInput', this)"></i>
@@ -136,7 +144,7 @@
             <i class="fas fa-shield-alt profile-icon-lg"></i>
             <h3 style="color:#fff; margin-bottom:10px;">Security Verification</h3>
             
-            <div class="phone-container" style="margin-bottom: 8px;">
+            <div class="phone-container">
                 <select id="resetCountryCode" class="country-select"></select>
                 <input type="tel" id="resetPhone" placeholder="Registered Phone">
             </div>
@@ -202,7 +210,10 @@
 
         <div id="tabChats" style="display:flex; flex-direction:column; flex:1;">
             <div style="padding: 12px 12px 0 12px;">
-                <input type="tel" id="targetPhone" placeholder="Friend's Number (e.g. +88017...)">
+                <div class="phone-container">
+                    <select id="searchCountryCode" class="country-select"></select>
+                    <input type="tel" id="targetPhone" placeholder="Friend's Number">
+                </div>
                 <button class="btn" onclick="addContact()">Add / Chat Friend</button>
             </div>
             <div class="friend-count-badge">
@@ -231,6 +242,7 @@
                     <span id="chatTitle" style="font-weight:bold;">User</span>
                 </div>
             </div>
+            <!-- Audio & Video Call Options -->
             <div class="call-actions">
                 <button class="call-btn" onclick="startCall('audio')" title="Audio Call"><i class="fas fa-phone-alt"></i></button>
                 <button class="call-btn" onclick="startCall('video')" title="Video Call"><i class="fas fa-video"></i></button>
@@ -239,12 +251,19 @@
         
         <div class="msg-area" id="msgArea"></div>
 
+        <!-- Chat Footer (File + Location + Textbar Keyboard Fix) -->
         <div class="chat-footer">
-            <input type="file" id="fileInput" style="display:none;" onchange="handleFileUpload(event)">
-            <button class="attach-btn" onclick="document.getElementById('fileInput').click()" title="Attach File (Max 30MB)">
+            <input type="file" id="fileInput" accept="image/*,video/*,.pdf,.doc,.docx" style="display:none;" onchange="handleFileUpload(event)">
+            
+            <button class="attach-btn" onclick="document.getElementById('fileInput').click()" title="Attach File (Max 3MB)">
                 <i class="fas fa-paperclip"></i>
             </button>
-            <input type="text" id="msgInput" placeholder="Message..." style="margin-bottom:0;">
+            
+            <button class="attach-btn" onclick="sendLocation()" title="Share Current Location">
+                <i class="fas fa-map-marker-alt" style="color: #ef4444;"></i>
+            </button>
+            
+            <input type="text" id="msgInput" placeholder="Message..." style="margin-bottom:0;" onfocus="scrollToBottom()">
             <button class="btn" style="width: auto; padding: 12px 16px;" onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
@@ -261,11 +280,10 @@
             </div>
 
             <div class="profile-info-box" id="modalExtraDataBox">
-                <span style="color:#aaa; font-size:11px; display:block;">STATUS:</span>
-                <div id="modalExtraContent" style="color:#ddd; margin-top:4px;">Private</div>
+                <span style="color:#aaa; font-size:11px; display:block;">DATE OF BIRTH (DOB):</span>
+                <div id="modalExtraContent" style="color:#ddd; margin-top:4px;">Not set</div>
             </div>
 
-            <!-- Self Profile Controls -->
             <div id="selfProfileControls" style="display:none; margin-top:10px;">
                 <button class="btn" onclick="showEditNameBox()" style="background:#007bff; margin-bottom:8px; font-size:13px;"><i class="fas fa-edit"></i> Edit Name</button>
                 
@@ -284,10 +302,19 @@
             <button class="btn btn-secondary" onclick="closeProfileModal()" style="margin-top:10px;">Close</button>
         </div>
     </div>
+
+    <!-- Active Call Screen -->
+    <div id="callOverlay">
+        <h3 id="callStatus" style="color:#fff;">Calling...</h3>
+        <div class="video-container">
+            <video id="remoteVideo" autoplay playsinline></video>
+            <video id="localVideo" autoplay playsinline muted></video>
+        </div>
+        <button class="btn" onclick="endCall()" style="background:#dc3545; max-width:150px;"><i class="fas fa-phone-slash"></i> End Call</button>
+    </div>
 </div>
 
 <script>
-    // Firebase Config
     const firebaseConfig = { 
         databaseURL: "https://global-messenger-a8719-default-rtdb.firebaseio.com/",
         storageBucket: "global-messenger-a8719.appspot.com"
@@ -295,7 +322,6 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Full Country Codes List
     const countryCodesList = [
         { name: "Bangladesh", code: "+880", flag: "🇧🇩" },
         { name: "Saudi Arabia", code: "+966", flag: "🇸🇦" },
@@ -372,12 +398,12 @@
         { name: "Yemen", code: "+967", flag: "🇾🇪" }
     ];
 
-    // Default mode is set to Login (isLoginMode = true)
     let isLoginMode = true; 
     let currentUserPhone = "";
     let activeChatTarget = "";
     let viewingProfilePhone = "";
     let currentSelfIsPublic = false;
+    let localStream = null;
 
     function initCountryCodes() {
         const selects = document.querySelectorAll(".country-select");
@@ -607,8 +633,11 @@
     }
 
     function addContact() {
-        const target = document.getElementById("targetPhone").value.trim();
-        if (!target) return alert("Enter friend's full phone number!");
+        const phoneRaw = document.getElementById("targetPhone").value.replace(/[^0-9]/g, '');
+        const countryCode = document.getElementById("searchCountryCode").value;
+        const target = countryCode + phoneRaw;
+
+        if (!phoneRaw) return alert("Enter friend's phone number!");
         if (target === currentUserPhone) return alert("Cannot add yourself!");
 
         db.ref("users/" + target).once("value", snap => {
@@ -643,9 +672,38 @@
         return p1 < p2 ? `${p1}_${p2}` : `${p2}_${p1}`;
     }
 
-    function startCall(type) {
+    function scrollToBottom() {
+        setTimeout(() => {
+            const area = document.getElementById("msgArea");
+            area.scrollTop = area.scrollHeight;
+        }, 300);
+    }
+
+    /* Video & Audio Call Setup */
+    async function startCall(type) {
         if (!activeChatTarget) return;
-        alert(`Starting ${type.toUpperCase()} call with ${activeChatTarget}...`);
+        const callOverlay = document.getElementById("callOverlay");
+        const callStatus = document.getElementById("callStatus");
+        callOverlay.style.display = "flex";
+        callStatus.innerText = `Starting ${type.toUpperCase()} call with ${activeChatTarget}...`;
+
+        try {
+            const constraints = { audio: true, video: type === 'video' };
+            localStream = await navigator.mediaDevices.getUserMedia(constraints);
+            document.getElementById("localVideo").srcObject = localStream;
+            document.getElementById("localVideo").style.display = type === 'video' ? 'block' : 'none';
+        } catch (err) {
+            alert("Camera or Microphone access denied / failed!");
+            endCall();
+        }
+    }
+
+    function endCall() {
+        if (localStream) {
+            localStream.getTracks().forEach(track => track.stop());
+            localStream = null;
+        }
+        document.getElementById("callOverlay").style.display = "none";
     }
 
     function sendMsg() {
@@ -662,16 +720,42 @@
         });
 
         input.value = "";
+        scrollToBottom();
     }
 
+    /* Location Sharing Feature */
+    function sendLocation() {
+        if (!activeChatTarget) return;
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(position => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                const mapUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+                
+                const roomId = getChatRoomId(currentUserPhone, activeChatTarget);
+                db.ref("chats/" + roomId).push({
+                    sender: currentUserPhone,
+                    msg: mapUrl,
+                    type: "location",
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+                scrollToBottom();
+            }, () => {
+                alert("Location access failed or permission denied!");
+            });
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
+    }
+
+    /* File Attachment Setup */
     function handleFileUpload(event) {
         const file = event.target.files[0];
         if (!file || !activeChatTarget) return;
 
-        // 30MB Limit Validation
-        const maxFileSize = 30 * 1024 * 1024;
+        const maxFileSize = 3 * 1024 * 1024; // 3MB Limit
         if (file.size > maxFileSize) {
-            alert("ফাইল সাইজ খুব বড়! সর্বোচ্চ ৩০ মেগাবাইট (30MB) পর্যন্ত ফাইল পাঠাতে পারবেন।");
+            alert("ফাইল সাইজ বেশি বড়! ডাটাবেসের সুরক্ষার জন্য সর্বোচ্চ ৩ মেগাবাইট (3MB) পর্যন্ত ফাইল পাঠাতে পারবেন।");
             event.target.value = ""; 
             return;
         }
@@ -691,6 +775,8 @@
                 fileName: file.name,
                 type: fileType,
                 timestamp: firebase.database.ServerValue.TIMESTAMP
+            }).catch(err => {
+                alert("Error sending file: Database limit exceeded.");
             });
         };
         reader.readAsDataURL(file);
@@ -709,18 +795,20 @@
                     msgDiv.className = `msg ${data.sender === currentUserPhone ? 'sent' : 'received'}`;
                     
                     if (data.type === "image") {
-                        msgDiv.innerHTML = `<img src="${data.fileData}" alt="Image"><br><small>${data.fileName || ''}</small>`;
+                        msgDiv.innerHTML = `<img src="${data.fileData}" alt="Image"><br><small style="font-size:10px; color:#ddd;">${data.fileName || ''}</small>`;
                     } else if (data.type === "video") {
-                        msgDiv.innerHTML = `<video controls src="${data.fileData}"></video><br><small>${data.fileName || ''}</small>`;
+                        msgDiv.innerHTML = `<video controls src="${data.fileData}"></video><br><small style="font-size:10px; color:#ddd;">${data.fileName || ''}</small>`;
                     } else if (data.type === "file") {
-                        msgDiv.innerHTML = `<a href="${data.fileData}" download="${data.fileName}" style="color:#fff;"><i class="fas fa-file-download"></i> ${data.fileName}</a>`;
+                        msgDiv.innerHTML = `<a href="${data.fileData}" download="${data.fileName}" style="color:#fff; text-decoration:underline;"><i class="fas fa-file-download"></i> ${data.fileName}</a>`;
+                    } else if (data.type === "location") {
+                        msgDiv.innerHTML = `<a href="${data.msg}" target="_blank" style="color:#fff; text-decoration:underline;"><i class="fas fa-map-marked-alt"></i> My Location (Google Maps)</a>`;
                     } else {
                         msgDiv.innerText = data.msg;
                     }
 
                     area.appendChild(msgDiv);
                 });
-                area.scrollTop = area.scrollHeight;
+                scrollToBottom();
             }
         });
     }
@@ -735,11 +823,14 @@
             document.getElementById("selfProfileControls").style.display = "block";
             document.getElementById("friendChatAction").style.display = "none";
             document.getElementById("modalExtraDataBox").style.display = "block";
-            document.getElementById("privacyToggleBtn").innerText = currentSelfIsPublic ? "Visibility: Public" : "Visibility: Private";
             
             db.ref("users/" + phone).once("value", snap => {
                 if (snap.exists()) {
-                    document.getElementById("modalUserName").innerText = snap.val().name;
+                    const uData = snap.val();
+                    document.getElementById("modalUserName").innerText = uData.name;
+                    document.getElementById("modalExtraContent").innerText = uData.dob || "Not set";
+                    currentSelfIsPublic = uData.isPublic || false;
+                    document.getElementById("privacyToggleBtn").innerText = currentSelfIsPublic ? "Visibility: Public" : "Visibility: Private";
                 }
             });
         } else {
@@ -752,7 +843,7 @@
                     document.getElementById("modalUserName").innerText = uData.name;
                     if (uData.isPublic) {
                         document.getElementById("modalExtraDataBox").style.display = "block";
-                        document.getElementById("modalExtraContent").innerText = "DOB: " + (uData.dob || "Hidden");
+                        document.getElementById("modalExtraContent").innerText = uData.dob || "Not set";
                     } else {
                         document.getElementById("modalExtraDataBox").style.display = "none";
                     }
